@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="/firebase-config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>CAS CE1</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #0066cc;
+            text-align: center;
+        }
+        .activity {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .activity h2 {
+            color: #e60012;
+        }
+        .activity p {
+            line-height: 1.6;
+        }
+    </style>
+<style>
+    .tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    .tab-button {
+        background-color: #0066cc;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin: 0 5px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1em;
+    }
+    .tab-button:hover {
+        background-color: #004c99;
+    }
+    .tab-content {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
+</head>
+<body>
+    <div class="tabs">
+    <button class="tab-button" onclick="showTab('announcement')">公告</button>   
+    <button class="tab-button" onclick="showTab('training')">訓練</button>
+    <button class="tab-button" onclick="showTab('services')">服務</button>
+    <button class="tab-button" onclick="showTab('activities')">活動</button>
+</div>
+
+<div id="training" class="tab-content"></div>
+<div id="activities" class="tab-content"></div>
+<div id="services" class="tab-content"></div>
+<div id="announcement" class="tab-content"></div>
+
+<script>
+    window.addEventListener('load', function() {
+        if (typeof firebase !== 'undefined') {
+            showTab('announcement');
+        } else {
+            console.error('Firebase SDK not loaded');
+        }
+    });
+    async function loadContent(tabName) {
+
+        //config
+
+        //if (!firebase.apps.length) {
+            //firebase.initializeApp(firebaseConfig);
+        //}
+        const db = firebase.firestore();
+        try {
+            const snapshot = await db.collection(tabName).orderBy('seq').get();
+            if (snapshot.empty) {
+                contentDiv.innerHTML = `<h1>${tabNames[tabName]}</h1><p>目前沒有資料</p>`;
+                return;
+            }
+            const tabNames = {'training': '訓練', 'activities': '活動', 'services': '服務', 'announcement': '公告'};
+            const contentDiv = document.getElementById(tabName);
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            contentDiv.innerHTML = `<h1>${tabNames[tabName]}</h1>`;
+
+            if (tabName === 'announcement') {
+                //contentDiv.innerHTML = `<h1>${tabNames[tabName]}</h1>`;
+                data.forEach(item => {
+                    const currentDate = new Date();
+                    const currentDateNum = parseInt(currentDate.getFullYear().toString() + (currentDate.getMonth() + 1).toString().padStart(2, '0') + currentDate.getDate().toString().padStart(2, '0'));
+                    if (item.display === 'Y' && (!item.expiry_date_id || currentDateNum <= item.expiry_date_id)) {
+                    //if (item.display === 'Y' && (!item.expiry_date || new Date() < new Date(item.expiry_date))) {
+                        contentDiv.innerHTML += `
+                            <div class="activity">
+                                <h2>${item.title}</h2>
+                                <p>${item.desc}</p>
+                            </div>
+                        `;
+                    }
+                });
+            } else {
+                //if (data && data[tabName]) {
+                //if (data[tabName]) {
+                //contentDiv.innerHTML = `<h1>${tabNames[tabName]}</h1>`;
+                data.forEach(item => {
+                    const currentDate = new Date();
+                    const currentDateNum = parseInt(currentDate.getFullYear().toString() + (currentDate.getMonth() + 1).toString().padStart(2, '0') + currentDate.getDate().toString().padStart(2, '0'));
+                    if (item.display === 'Y' && (!item.expiry_date_id || currentDateNum <= item.expiry_date_id)) {
+                    //if (item.display === 'Y') {
+                        contentDiv.innerHTML += `
+                            <div class="activity">
+                                <h2>${item.title}</h2>
+                                <p>日期: ${item.date}</p>
+                                <p>時間: ${item.time}</p>
+                                <p>地點: ${item.location}</p>
+                                ${item.remark ? `<p>備註1: ${item.remark}</p>` : ''}
+                                ${item.remark2 ? `<p>備註2: ${item.remark2}</p>` : ''}
+                            </div>
+                        `;
+                    }
+                });
+                //} else {
+                    //console.error('No data found for tab:', tabName);
+                //}
+            }
+        } catch (error) {
+                console.error('載入資料失敗:', error);
+        }
+    }
+    function showTab(tabName) {
+        const tabs = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => {
+            tab.style.display = 'none';
+        });
+        document.getElementById(tabName).style.display = 'block';
+        loadContent(tabName);
+    }
+</script>
+</body>
+</html>
