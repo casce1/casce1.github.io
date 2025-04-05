@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="/firebase-config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+    <title>Admin</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .submit-btn {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .submit-btn:hover {
+            background-color: #004c99;
+        }
+        .google-btn {
+            background-color: #db4437;
+            margin-top: 10px;
+        }
+        .google-btn:hover {
+            background-color: #c1351d;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="login-container">
+        <h2>RESTRICT AREA - Login</h2>
+        <button class="submit-btn google-btn" onclick="googleLogin()">Sign in</button>
+    </div>
+
+    <div id="admin-container" style="display:none;">
+        <h1>Admin Dashboard</h1>
+            <select id="menu-select" onchange="handleMenuChange()">
+            <option value="announcement">新增公告</option>
+            <option value="training">新增訓練</option>
+            <option value="service">新增服務</option>
+            <option value="activity">新增活動</option>
+        </select>
+
+        <!-- Your admin content here -->
+        <div id="announcement-section">
+            <h2>新增公告</h2>
+            <div class="input-group">
+                <label for="title">標題:</label>
+                <input type="text" id="title">
+            </div>
+            <div class="input-group">
+                <label for="desc">描述:</label>
+                <input type="text" id="desc">
+            </div>
+            <div class="input-group">
+                <label for="expire_date_id">有效期至:</label>
+                <input type="text" id="expire_date_id" placeholder="YYYYMMDD">
+            </div>
+            <button class="submit-btn" onclick="insertAnnouncement()">提交</button>
+            <button class="submit-btn" onclick="logout()" style="margin-top: 20px;">登出</button>
+        </div>
+
+        <div id="training-section" style="display:none;">
+        <h2>新增訓練</h2>
+        <div class="input-group">
+            <label for="training_title">標題:</label>
+            <input type="text" id="training_title">
+            </div>
+            <div class="input-group">
+            <label for="training_date">日期:</label>
+            <input type="text" id="training_date">
+            </div>
+            <div class="input-group">
+            <label for="training_time">時間:</label>
+            <input type="text" id="training_time">
+            </div>
+            <div class="input-group">
+            <label for="training_location">地點:</label>
+            <input type="text" id="training_location">
+            </div>
+            <div class="input-group">
+            <label for="training_remark">備註1:</label>
+            <input type="text" id="training_remark">
+            </div>
+            <div class="input-group">
+            <label for="training_remark2">備註2:</label>
+            <input type="text" id="training_remark2">
+            </div>
+            <div class="input-group">
+            <label for="training_expire_date_id">有效期至:</label>
+            <input type="text" id="training_expire_date_id" placeholder="YYYYMMDD">
+            </div>
+            <button class="submit-btn" onclick="insertTraining()">提交</button>
+            <button class="submit-btn" onclick="logout()" style="margin-top: 20px;">登出</button>
+            </div>
+        </div>
+
+    <div id="service-section" style="display:none;">
+        <h2>新增服務</h2>
+        <div class="input-group">
+        <label for="service_title">標題:</label>
+        <input type="text" id="service_title">
+    </div>
+    <div class="input-group">
+    <label for="service_date">日期:</label>
+    <input type="text" id="service_date">
+    </div>
+    <div class="input-group">
+    <label for="service_time">時間:</label>
+    <input type="text" id="service_time">
+    </div>
+    <div class="input-group">
+    <label for="service_location">地點:</label>
+    <input type="text" id="service_location">
+    </div>
+    <div class="input-group">
+    <label for="service_remark">備註1:</label>
+    <input type="text" id="service_remark">
+    </div>
+    <div class="input-group">
+    <label for="service_remark2">備註2:</label>
+    <input type="text" id="service_remark2">
+    </div>
+    <div class="input-group">
+    <label for="service_expire_date_id">有效期至:</label>
+    <input type="text" id="service_expire_date_id" placeholder="YYYYMMDD">
+    </div>
+    <button class="submit-btn" onclick="insertService()">提交</button>
+    <button class="submit-btn" onclick="logout()" style="margin-top: 20px;">登出</button>
+    </div>
+
+    <div id="activity-section" style="display:none;">
+    <h2>新增活動</h2>
+    <div class="input-group">
+    <label for="activity_title">標題:</label>
+    <input type="text" id="activity_title">
+    </div>
+    <div class="input-group">
+    <label for="activity_date">日期:</label>
+    <input type="text" id="activity_date">
+    </div>
+    <div class="input-group">
+    <label for="activity_time">時間:</label>
+    <input type="text" id="activity_time">
+    </div>
+    <div class="input-group">
+    <label for="activity_location">地點:</label>
+    <input type="text" id="activity_location">
+    </div>
+    <div class="input-group">
+    <label for="activity_remark">備註1:</label>
+    <input type="text" id="activity_remark">
+    </div>
+    <div class="input-group">
+    <label for="activity_remark2">備註2:</label>
+    <input type="text" id="activity_remark2">
+    </div>
+    <div class="input-group">
+    <label for="activity_expire_date_id">有效期至:</label>
+    <input type="text" id="activity_expire_date_id" placeholder="YYYYMMDD">
+    </div>
+    <button class="submit-btn" onclick="insertActivity()">提交</button>
+    <button class="submit-btn" onclick="logout()" style="margin-top: 20px;">登出</button>
+</div>
+    <script>
+
+        function handleMenuChange() {
+            const selected = document.getElementById('menu-select').value;
+            document.getElementById('announcement-section').style.display = selected === 'announcement' ? 'block' : 'none';
+            document.getElementById('training-section').style.display = selected === 'training' ? 'block' : 'none';
+            document.getElementById('service-section').style.display = selected === 'service' ? 'block' : 'none';
+            document.getElementById('activity-section').style.display = selected === 'activity' ? 'block' : 'none';
+
+        }
+
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        auth.onAuthStateChanged(function(user) {
+            if (user) {
+                // User is signed in.
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('admin-container').style.display = 'block';
+            } else {
+                // No user is signed in.
+                document.getElementById('login-container').style.display = 'block';
+                document.getElementById('admin-container').style.display = 'none';
+            }
+        });
+
+    async function logout() {
+        try {
+            await auth.signOut();
+            window.location.href = '/login_admin.html';
+        } catch (error) {
+            alert('登出失敗: ' + error.message);
+        }
+    }
+
+       async function googleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                const result = await auth.signInWithPopup(provider);
+                if (result.user) {
+                    if (window.opener && !window.opener.closed) {
+                        window.opener.postMessage({ type: 'authSuccess', user: result.user }, window.location.origin);
+                        window.close();
+                    } else {
+                        window.location.href = '/login_admin.html';
+                    }
+                }
+            } catch (error) {
+                alert('Google登入失敗: ' + error.message);
+            }
+        }
+
+
+        async function insertService() {
+        const user = auth.currentUser;
+        if (!user) {
+            alert('請先登入！');
+            return;
+        }
+
+        const title = document.getElementById('service_title').value;
+        const date = document.getElementById('service_date').value;
+        const time = document.getElementById('service_time').value;
+        const location = document.getElementById('service_location').value;
+        const remark = document.getElementById('service_remark').value;
+        const remark2 = document.getElementById('service_remark2').value;
+        const expire = document.getElementById('service_expire_date_id').value;
+
+        if (!title || !date || !time || !location || !expire) {
+            alert('請填寫所有欄位！');
+            return;
+        }
+
+        const snapshot = await db.collection('services').get();
+        const count = snapshot.size;
+        const seq = count + 1;
+
+        await db.collection('services').add({
+            seq: seq,
+            title: title,
+            date: date,
+            time: time,
+            location: location,
+            remark: remark,
+            remark2: remark2,
+            display: 'Y',
+            expire_date_id: expire,
+            createdBy: user.uid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert('服務新增成功！');
+        document.getElementById('service_title').value = '';
+        document.getElementById('service_date').value = '';
+        document.getElementById('service_time').value = '';
+        document.getElementById('service_location').value = '';
+        document.getElementById('service_remark').value = '';
+        document.getElementById('service_remark2').value = '';
+        document.getElementById('service_expire_date_id').value = '';
+}
+
+async function insertActivity() {
+  const user = auth.currentUser;
+  if (!user) {
+    alert('請先登入！');
+    return;
+  }
+
+  const title = document.getElementById('activity_title').value;
+  const date = document.getElementById('activity_date').value;
+  const time = document.getElementById('activity_time').value;
+  const location = document.getElementById('activity_location').value;
+  const remark = document.getElementById('activity_remark').value;
+  const remark2 = document.getElementById('activity_remark2').value;
+  const expire = document.getElementById('activity_expire_date_id').value;
+
+  if (!title || !date || !time || !location || !expire) {
+    alert('請填寫所有欄位！');
+    return;
+  }
+
+  const snapshot = await db.collection('activities').get();
+  const count = snapshot.size;
+  const seq = count + 1;
+
+  await db.collection('activities').add({
+    seq: seq,
+    title: title,
+    date: date,
+    time: time,
+    location: location,
+    remark: remark,
+    remark2: remark2,
+    display: 'Y',
+    expire_date_id: expire,
+    createdBy: user.uid,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  alert('活動新增成功！');
+  document.getElementById('activity_title').value = '';
+  document.getElementById('activity_date').value = '';
+  document.getElementById('activity_time').value = '';
+  document.getElementById('activity_location').value = '';
+  document.getElementById('activity_remark').value = '';
+  document.getElementById('activity_remark2').value = '';
+  document.getElementById('activity_expire_date_id').value = '';
+}
+
+async function insertTraining() {
+            const user = auth.currentUser;
+            if (!user) {
+                alert('請先登入！');
+                return;
+            }
+
+            const title = document.getElementById('training_title').value;
+            const date = document.getElementById('training_date').value;
+            const time = document.getElementById('training_time').value;
+            const location = document.getElementById('training_location').value;
+            const remark = document.getElementById('training_remark').value;
+            const remark2 = document.getElementById('training_remark2').value;
+            const expire = document.getElementById('training_expire_date_id').value;
+
+            if (!title || !date || !time || !location || !expire) {
+                alert('請填寫所有欄位！');
+                return;
+            }
+
+            const snapshot = await db.collection('training').get();
+            const count = snapshot.size;
+            const seq = count + 1;
+
+            await db.collection('training').add({
+                seq: seq,
+                title: title,
+                date: date,
+                time: time,
+                location: location,
+                remark: remark,
+                remark2: remark2,
+                display: 'Y',
+                expire_date_id: expire,
+                createdBy: user.uid,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            alert('訓練新增成功！');
+            document.getElementById('training_title').value = '';
+            document.getElementById('training_date').value = '';
+            document.getElementById('training_time').value = '';
+            document.getElementById('training_location').value = '';
+            document.getElementById('training_remark').value = '';
+            document.getElementById('training_remark2').value = '';
+            document.getElementById('training_expire_date_id').value = '';
+        }
+
+async function insertAnnouncement() {
+            const user = auth.currentUser;
+            if (!user) {
+                alert('請先登入！');
+                return;
+            }
+
+            const title = document.getElementById('title').value;
+            const desc = document.getElementById('desc').value;
+            const expire = document.getElementById('expire_date_id').value;
+            if (!title || !desc || !expire) {
+                alert('請填寫所有欄位！');
+                return;
+            }
+
+            // 獲取當前公告數量
+            const snapshot = await db.collection('announcement').get();
+            const count = snapshot.size;
+            const seq = count + 1;
+
+            // 插入新公告
+            await db.collection('announcement').add({
+                seq: seq,
+                title: title,
+                desc: desc,
+                display: 'Y',
+                expire_date_id: expire,
+                createdBy: user.uid,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            alert('公告新增成功！');
+            document.getElementById('title').value = '';
+            document.getElementById('desc').value = '';
+            document.getElementById('expire_date_id').value = '';
+        }
+    </script>
+</body>
+</html>

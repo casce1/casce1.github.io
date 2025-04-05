@@ -69,12 +69,36 @@
     <button class="tab-button" onclick="showTab('training')">訓練</button>
     <button class="tab-button" onclick="showTab('services')">服務</button>
     <button class="tab-button" onclick="showTab('activities')">活動</button>
+    <button class="tab-button" onclick="showTab('admin')">管理員</button>
 </div>
 
 <div id="training" class="tab-content"></div>
 <div id="activities" class="tab-content"></div>
 <div id="services" class="tab-content"></div>
 <div id="announcement" class="tab-content"></div>
+<div id="admin" class="tab-content" style="width:100%; height:80vh;"">
+    <iframe id="admin-frame" src="login_admin.html" style="width:100%; height:80vh; border:none;"></iframe>
+</div>
+<div id="admin-login-container" style="display:none;">
+    <div id="admin-container" style="display:none;">
+        <h1>Admin Dashboard</h1>
+        <h2>新增公告</h2>
+        <div class="input-group">
+            <label for="title">標題:</label>
+            <input type="text" id="title">
+        </div>
+        <div class="input-group">
+            <label for="desc">描述:</label>
+            <input type="text" id="desc">
+        </div>
+        <div class="input-group">
+            <label for="expire_date_id">有效期至:</label>
+            <input type="text" id="expire_date_id" placeholder="YYYYMMDD">
+        </div>
+        <button class="submit-btn" onclick="insertAnnouncement()">提交</button>
+        <button class="submit-btn" onclick="logout()" style="margin-top: 20px;">登出</button>
+    </div>
+</div>
 
 <script>
     window.addEventListener('load', function() {
@@ -85,6 +109,8 @@
         }
     });
     async function loadContent(tabName) {
+        const tabNames = {'training': '訓練', 'activities': '活動', 'services': '服務', 'announcement': '公告', 'admin': '管理員'};
+        const contentDiv = document.getElementById(tabName);
 
         //config
 
@@ -98,8 +124,6 @@
                 contentDiv.innerHTML = `<h1>${tabNames[tabName]}</h1><p>目前沒有資料</p>`;
                 return;
             }
-            const tabNames = {'training': '訓練', 'activities': '活動', 'services': '服務', 'announcement': '公告'};
-            const contentDiv = document.getElementById(tabName);
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             contentDiv.innerHTML = `<h1>${tabNames[tabName]}</h1>`;
 
@@ -150,10 +174,26 @@
     function showTab(tabName) {
         const tabs = document.querySelectorAll('.tab-content');
         tabs.forEach(tab => {
-            tab.style.display = 'none';
+            if (tab) {
+                tab.style.display = 'none';
+            }
         });
-        document.getElementById(tabName).style.display = 'block';
-        loadContent(tabName);
+        if (tabName === 'admin') {
+            const adminTab = document.getElementById('admin');
+            if (adminTab) {
+                adminTab.style.display = 'block';
+                const adminFrame = document.getElementById('admin-frame');
+                if (adminFrame) {
+                    adminFrame.style.display = 'block';
+                }
+            }
+        } else {
+            const tab = document.getElementById(tabName);
+            if (tab) {
+                tab.style.display = 'block';
+                loadContent(tabName);
+            }
+        }
     }
 </script>
 </body>
