@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="./firebase-config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+    <title>公告維護</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .submit-btn {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .submit-btn:hover {
+            background-color: #004c99;
+        }
+        .record-list {
+            margin-top: 20px;
+        }
+        .record-item {
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .record-item:hover {
+            background-color: #f0f0f0;
+        }
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination button {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-container">
+        <h2>RESTRICTED AREA - Login</h2>
+        <button class="submit-btn google-btn" onclick="googleLogin()">Sign in</button>
+    </div>
+
+    <div id="maint-container" style="display:none;">
+        <h1>更新資料</h1>
+<div class="input-group">
+<label for="update-type">更新類型:</label>
+<select id="update-type" onchange="changeUpdateType()">
+<option value="announcement">更新公告</option>
+<option value="training">更新訓練</option>
+<option value="services">更新服務</option>
+<option value="activities">更新活動</option>
+</select>
+</div>
+        <div class="record-list" id="record-list"></div>
+        <div class="pagination" id="pagination"></div>
+        <div id="edit-form" style="display:none;">
+            <div class="input-group">
+                <label for="edit-title">標題:</label>
+                <input type="text" id="edit-title">
+            </div>
+            <div class="input-group" id="edit-desc-group">
+                <label for="edit-desc">描述:</label>
+                <input type="text" id="edit-desc">
+            </div>
+            <div class="input-group" id="edit-date-group">
+                <label for="edit-date">日期:</label>
+                <input type="text" id="edit-date">
+            </div>
+            <div class="input-group" id="edit-time-group">
+                <label for="edit-time">時間:</label>
+                <input type="text" id="edit-time">
+            </div>
+            <div class="input-group" id="edit-location-group">
+                <label for="edit-location">地點:</label>
+                <input type="text" id="edit-location">
+            </div>
+            <div class="input-group" id="edit-remark-group">
+                <label for="edit-remark">備註:</label>
+                <input type="text" id="edit-remark">
+            </div>
+            <div class="input-group" id="edit-remark2-group">
+                <label for="edit-remark2">備註2:</label>
+                <input type="text" id="edit-remark2">
+            </div>
+            <div class="input-group">
+                <label for="edit-expire">有效期至:</label>
+                <input type="text" id="edit-expire" placeholder="YYYYMMDD">
+            </div>
+            <div class="input-group">
+                <label for="edit-display">顯示狀態:</label>
+                <select id="edit-display">
+                    <option value="Y">顯示</option>
+                    <option value="N">隱藏</option>
+                </select>
+            </div>
+            <button class="submit-btn" onclick="saveChanges()">更新</button>
+            <button class="submit-btn" onclick="cancelEdit()">取消</button>
+        </div>
+        <button class="submit-btn" onclick="logout()" style="margin-top: 20px;">登出</button>
+    </div>
+
+    <script>
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        let currentPage = 1;
+        let selectedRecord = null;
+
+        auth.onAuthStateChanged(function(user) {
+            if (user) {
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('maint-container').style.display = 'block';
+                loadRecords();
+            } else {
+                document.getElementById('login-container').style.display = 'block';
+                document.getElementById('maint-container').style.display = 'none';
+            }
+        });
+
+        async function changeUpdateType() {
+const type = document.getElementById('update-type').value;
+currentPage = 1;
+loadRecords(type);
+}
+/*
+async function loadRecords(type = 'announcement') {
+            const collectionMap = {
+                'announcement': 'announcement',
+                'training': 'training',
+                'services': 'services',
+                'activities': 'activities'
+            };
+
+            //const collection = collectionMap[type] || 'announcement';
+            const collection = collectionMap[type];
+            
+            const snapshot = await db.collection(collection)
+                  .orderBy('seq', 'asc')
+                  .limit(5)
+                  .startAfter((currentPage - 1) * 5)
+                  .get();
+ 
+
+            const records = snapshot.docs.map(doc => {
+                const data = doc.data() || {};
+                if (type === 'announcement') {
+                    return { id: doc.id, seq: data.seq, title: data.title, desc: data.desc, display: data.display, expiry_date_id: data.expiry_date_id };
+                } else if (type === 'activities' || type === 'services' || type === 'training') {
+                    return { id: doc.id, seq: data.seq, title: data.title, date: data.date, time: data.time, location: data.location, remark: data.remark, remark2: data.remark2, display: data.display, expiry_date_id: data.expiry_date_id };
+                }
+                //} else if (type === 'training') {
+                    //return { id: doc.id, seq: data.seq, title: data.title, date: data.date, time: data.time, location: data.location, remark: data.remark, remark2: data.remark2, display: data.display, expiry_date_id: data.expiry_date_id };
+                //}
+            });
+            renderRecords(records, type);
+            renderPagination();
+}
+*/
+async function loadRecords(type = 'announcement') {
+
+    const COLLECTION_MAP = Object.freeze({
+        announcement: 'announcement',
+        training: 'training',
+        services: 'services',
+        activities: 'activities'
+    });
+
+    const FIELD_CONFIG = {
+        announcement: ['seq', 'title', 'desc', 'display', 'expiry_date_id'],
+        default: ['seq', 'title', 'date', 'time', 'location', 'remark', 'remark2', 'display', 'expiry_date_id']
+    };
+
+    try {
+        const collection = COLLECTION_MAP[type] || COLLECTION_MAP.announcement;
+        const pageSize = 5;
+        const startOffset = (currentPage - 1) * pageSize;
+
+        const snapshot = await db.collection(collection)
+            .orderBy('seq', 'asc')
+            .limit(pageSize)
+            .startAfter(startOffset)
+            .get();
+
+        if (snapshot.empty) {
+            alert('沒有更多資料了');
+            return;
+        }
+
+        const records = snapshot.docs.map(doc => {
+            const data = doc.data() || {};
+            const fields = FIELD_CONFIG[type] || FIELD_CONFIG.default;
+            
+
+            const record = { id: doc.id };
+            fields.forEach(field => {
+                if (field in data) record[field] = data[field];
+            });
+            
+            return record;
+        });
+
+        await Promise.all([
+            renderRecords(records, type),
+            renderPagination()
+        ]);
+
+        return records; // 可選：返回資料以便進一步處理
+
+    } catch (error) {
+        console.error(`Error loading ${type} records:`, error);
+        throw error; 
+    }
+}
+
+        function renderRecords(records, type) {
+            const list = document.getElementById('record-list');
+            list.innerHTML = records.map(record => `
+                <div class="record-item" data-id="${record.id}" onclick="selectRecord('${record.id}', '${type}')">
+                    <div>#${record.seq} ${record.title}</div>
+                    ${type === 'announcement' ? `<div>${record.desc}</div>` : ''}
+                    ${type === 'activities' || type === 'services' || type === 'training' ? `<div>日期: ${record.date} ${record.time}</div>` : ''}
+                    ${type === 'activities' || type === 'services' || type === 'training' ? `<div>地點: ${record.location}</div>` : ''}
+                    <div>有效日期: ${type === 'training' ? record.expiry_date_id : record.expiry_date_id}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = `
+                <button onclick="prevPage()" ${currentPage === 1 ? 'disabled' : ''}>上一頁</button>
+                <span>第 ${currentPage} 頁</span>
+                <button onclick="nextPage()">下一頁</button>
+            `;
+        }
+
+        async function selectRecord(id, type) {
+            selectedRecord = id;
+            const doc = await db.collection(type).doc(id).get();
+            const data = doc.data() || {};
+            document.getElementById('edit-title').value = data.title || '';
+            if (type === 'announcement') {
+                document.getElementById('edit-desc-group').style.display = 'block';
+                document.getElementById('edit-date-group').style.display = 'none';
+                document.getElementById('edit-time-group').style.display = 'none';
+                document.getElementById('edit-location-group').style.display = 'none';
+                document.getElementById('edit-remark-group').style.display = 'none';
+                document.getElementById('edit-remark2-group').style.display = 'none';
+                document.getElementById('edit-desc').value = data.desc || '';
+            } else if (type === 'activities' || type === 'services' || type === 'training') {
+                document.getElementById('edit-desc-group').style.display = 'none';
+                document.getElementById('edit-date-group').style.display = 'block';
+                document.getElementById('edit-time-group').style.display = 'block';
+                document.getElementById('edit-location-group').style.display = 'block';
+                document.getElementById('edit-remark-group').style.display = 'block';
+                document.getElementById('edit-remark2-group').style.display = 'block';
+                document.getElementById('edit-date').value = data.date || '';
+                document.getElementById('edit-time').value = data.time || '';
+                document.getElementById('edit-location').value = data.location || '';
+                document.getElementById('edit-remark').value = data.remark || '';
+                document.getElementById('edit-remark2').value = data.remark2 || '';
+            }
+            document.getElementById('edit-expire').value = data.expiry_date_id || '';
+            document.getElementById('edit-display').value = data.display || '';
+            document.getElementById('edit-form').style.display = 'block';
+        }
+
+        async function saveChanges() {
+
+            const user = auth.currentUser;
+            if (!user) {
+                alert('請先登入！');
+                return;
+            }
+
+            const type = document.getElementById('update-type').value;
+            const updateDataA = {
+                    title: document.getElementById('edit-title').value,
+                    display: document.getElementById('edit-display').value
+             };
+             const updateData = {
+                    title: document.getElementById('edit-title').value,
+                    date: document.getElementById('edit-date').value,
+                    time: document.getElementById('edit-time').value,
+                    display: document.getElementById('edit-display').value,
+                    location: document.getElementById('edit-location').value,
+                    remark: document.getElementById('edit-remark').value,
+                    remark2: document.getElementById('edit-remark2').value,
+                    expiry_date_id: document.getElementById('edit-expire').value
+                };
+
+            if (!selectedRecord) return;
+            
+            if (type === 'announcement' ) {
+                updateDataA.title = document.getElementById('edit-title').value;
+                updateDataA.desc = document.getElementById('edit-desc').value;
+                updateDataA.expiry_date_id = document.getElementById('edit-expire').value;
+                await db.collection(type).doc(selectedRecord).update(updateDataA);
+            } else if (type === 'activities' || type === 'services' || type === 'training') {
+                updateData.date = document.getElementById('edit-date').value;
+                updateData.time = document.getElementById('edit-time').value;
+                updateData.location = document.getElementById('edit-location').value;
+                updateData.remark = document.getElementById('edit-remark').value+"";
+                updateData.remark2 = document.getElementById('edit-remark2').value+"";
+                updateData.expiry_date_id = document.getElementById('edit-expire').value;
+                await db.collection(type).doc(selectedRecord).update(updateData);
+            }
+
+            //await db.collection(type).doc(selectedRecord).update(updateData);
+            alert('更新成功！');
+            cancelEdit();
+            loadRecords(type);
+            //renderRecords(records, type);
+        }
+
+        function cancelEdit() {
+            selectedRecord = null;
+            document.getElementById('edit-form').style.display = 'none';
+        }
+
+        function prevPage() {
+            const type = document.getElementById('update-type').value;
+            if (currentPage > 1) {
+                currentPage--;
+                //loadRecords();
+                loadRecords(type);
+            }
+        }
+
+        function nextPage() {
+            const type = document.getElementById('update-type').value;
+            currentPage++;
+            //loadRecords();
+            loadRecords(type);
+        }
+
+        async function logout() {
+            try {
+                await auth.signOut();
+                window.location.href = '/login_maint.html';
+            } catch (error) {
+                alert('登出失敗: ' + error.message);
+            }
+        }
+
+        async function googleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                const result = await auth.signInWithPopup(provider);
+                if (result.user) {
+                    if (window.opener && !window.opener.closed) {
+                        window.opener.postMessage({ type: 'authSuccess', user: result.user }, window.location.origin);
+                        window.close();
+                    } else {
+                        window.location.href = '/login_maint.html';
+                    }
+                }
+            } catch (error) {
+                alert('Google登入失敗: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
