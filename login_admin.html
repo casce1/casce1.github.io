@@ -4,7 +4,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-    <script src="/firebase-config.js"></script>
+    <script src="./firebase-config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
@@ -79,8 +79,8 @@
                 <input type="text" id="desc">
             </div>
             <div class="input-group">
-                <label for="expire_date_id">有效期至:</label>
-                <input type="text" id="expire_date_id" placeholder="YYYYMMDD">
+                <label for="expiry_date_id">有效期至:</label>
+                <input type="text" id="expiry_date_id" placeholder="YYYYMMDD">
             </div>
             <button class="submit-btn" onclick="insertAnnouncement()">提交</button>
             <button class="submit-btn" onclick="logout()" style="margin-top: 20px;">登出</button>
@@ -113,8 +113,8 @@
             <input type="text" id="training_remark2">
             </div>
             <div class="input-group">
-            <label for="training_expire_date_id">有效期至:</label>
-            <input type="text" id="training_expire_date_id" placeholder="YYYYMMDD">
+            <label for="training_expiry_date_id">有效期至:</label>
+            <input type="text" id="training_expiry_date_id" placeholder="YYYYMMDD">
             </div>
             <button class="submit-btn" onclick="insertTraining()">提交</button>
             <button class="submit-btn" onclick="logout()" style="margin-top: 20px;">登出</button>
@@ -148,8 +148,8 @@
     <input type="text" id="service_remark2">
     </div>
     <div class="input-group">
-    <label for="service_expire_date_id">有效期至:</label>
-    <input type="text" id="service_expire_date_id" placeholder="YYYYMMDD">
+    <label for="service_expiry_date_id">有效期至:</label>
+    <input type="text" id="service_expiry_date_id" placeholder="YYYYMMDD">
     </div>
     <button class="submit-btn" onclick="insertService()">提交</button>
     <button class="submit-btn" onclick="logout()" style="margin-top: 20px;">登出</button>
@@ -182,8 +182,8 @@
     <input type="text" id="activity_remark2">
     </div>
     <div class="input-group">
-    <label for="activity_expire_date_id">有效期至:</label>
-    <input type="text" id="activity_expire_date_id" placeholder="YYYYMMDD">
+    <label for="activity_expiry_date_id">有效期至:</label>
+    <input type="text" id="activity_expiry_date_id" placeholder="YYYYMMDD">
     </div>
     <button class="submit-btn" onclick="insertActivity()">提交</button>
     <button class="submit-btn" onclick="logout()" style="margin-top: 20px;">登出</button>
@@ -254,7 +254,7 @@
         const location = document.getElementById('service_location').value;
         const remark = document.getElementById('service_remark').value;
         const remark2 = document.getElementById('service_remark2').value;
-        const expire = document.getElementById('service_expire_date_id').value;
+        const expire = document.getElementById('service_expiry_date_id').value;
 
         if (!title || !date || !time || !location || !expire) {
             alert('請填寫所有欄位！');
@@ -274,7 +274,7 @@
             remark: remark,
             remark2: remark2,
             display: 'Y',
-            expire_date_id: expire,
+            expiry_date_id: expire,
             createdBy: user.uid,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
@@ -286,7 +286,7 @@
         document.getElementById('service_location').value = '';
         document.getElementById('service_remark').value = '';
         document.getElementById('service_remark2').value = '';
-        document.getElementById('service_expire_date_id').value = '';
+        document.getElementById('service_expiry_date_id').value = '';
 }
 
 async function insertActivity() {
@@ -302,7 +302,7 @@ async function insertActivity() {
   const location = document.getElementById('activity_location').value;
   const remark = document.getElementById('activity_remark').value;
   const remark2 = document.getElementById('activity_remark2').value;
-  const expire = document.getElementById('activity_expire_date_id').value;
+  const expire = document.getElementById('activity_expiry_date_id').value;
 
   if (!title || !date || !time || !location || !expire) {
     alert('請填寫所有欄位！');
@@ -322,7 +322,7 @@ async function insertActivity() {
     remark: remark,
     remark2: remark2,
     display: 'Y',
-    expire_date_id: expire,
+    expiry_date_id: expire,
     createdBy: user.uid,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
@@ -334,7 +334,7 @@ async function insertActivity() {
   document.getElementById('activity_location').value = '';
   document.getElementById('activity_remark').value = '';
   document.getElementById('activity_remark2').value = '';
-  document.getElementById('activity_expire_date_id').value = '';
+  document.getElementById('activity_expiry_date_id').value = '';
 }
 
 async function insertTraining() {
@@ -350,7 +350,7 @@ async function insertTraining() {
             const location = document.getElementById('training_location').value;
             const remark = document.getElementById('training_remark').value;
             const remark2 = document.getElementById('training_remark2').value;
-            const expire = document.getElementById('training_expire_date_id').value;
+            const expire = document.getElementById('training_expiry_date_id').value;
 
             if (!title || !date || !time || !location || !expire) {
                 alert('請填寫所有欄位！');
@@ -370,7 +370,7 @@ async function insertTraining() {
                 remark: remark,
                 remark2: remark2,
                 display: 'Y',
-                expire_date_id: expire,
+                expiry_date_id: expire,
                 createdBy: user.uid,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
@@ -382,7 +382,7 @@ async function insertTraining() {
             document.getElementById('training_location').value = '';
             document.getElementById('training_remark').value = '';
             document.getElementById('training_remark2').value = '';
-            document.getElementById('training_expire_date_id').value = '';
+            document.getElementById('training_expiry_date_id').value = '';
         }
 
 async function insertAnnouncement() {
@@ -394,7 +394,7 @@ async function insertAnnouncement() {
 
             const title = document.getElementById('title').value;
             const desc = document.getElementById('desc').value;
-            const expire = document.getElementById('expire_date_id').value;
+            const expire = document.getElementById('expiry_date_id').value;
             if (!title || !desc || !expire) {
                 alert('請填寫所有欄位！');
                 return;
@@ -411,7 +411,7 @@ async function insertAnnouncement() {
                 title: title,
                 desc: desc,
                 display: 'Y',
-                expire_date_id: expire,
+                expiry_date_id: expire,
                 createdBy: user.uid,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
@@ -419,7 +419,7 @@ async function insertAnnouncement() {
             alert('公告新增成功！');
             document.getElementById('title').value = '';
             document.getElementById('desc').value = '';
-            document.getElementById('expire_date_id').value = '';
+            document.getElementById('expiry_date_id').value = '';
         }
     </script>
 </body>
