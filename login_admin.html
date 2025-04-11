@@ -48,11 +48,14 @@
         .google-btn:hover {
             background-color: #c1351d;
         }
+        #announcement-section {
+            display: none;
+        }
+       
     </style>
 </head>
 
 <body>
-
     <div id="login-container">
         <h2>RESTRICTED AREA - Login</h2>
         <button class="submit-btn google-btn" onclick="googleLogin()">Sign in</button>
@@ -67,7 +70,6 @@
             <option value="activity">新增活動</option>
         </select>
 
-        <!-- Your admin content here -->
         <div id="announcement-section">
             <h2>新增公告</h2>
             <div class="input-group">
@@ -190,6 +192,7 @@
 </div>
     <script>
 
+
         function handleMenuChange() {
             const selected = document.getElementById('menu-select').value;
             document.getElementById('announcement-section').style.display = selected === 'announcement' ? 'block' : 'none';
@@ -207,6 +210,7 @@
                 // User is signed in.
                 document.getElementById('login-container').style.display = 'none';
                 document.getElementById('admin-container').style.display = 'block';
+                document.getElementById('announcement-section').style.display = 'block';
             } else {
                 // No user is signed in.
                 document.getElementById('login-container').style.display = 'block';
@@ -223,7 +227,55 @@
         }
     }
 
+    async function sha256(text) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(text);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hashBuffer))
+                        .map(b => b.toString(16).padStart(2, '0'))
+                        .join('');
+        }
+
+        async function googleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                const result = await auth.signInWithPopup(provider);
+
+                if (result.user) {
+                    const email = result.user.email.toLowerCase().trim();
+                    const hashedEmail = await sha256(email);
+                    //alert(result.user.email);
+                    //alert(hashedEmail);
+                    const allowedHashes = [
+                        "c9fa9cbff8a6d8303163cf34c81624b33938758d1c9899c66a6d84b3a980dc0f",
+                        "67b8d4621b0c28456f018f20572d7d0c23e20449f5bf4942859f798045063b03"
+                    ];
+
+                    if (!allowedHashes.includes(hashedEmail)) {
+                        alert("Access denied: This email is not authorized.");
+                        await auth.signOut();
+                        return;
+                    }else {
+                        document.getElementById('login-container').style.display = 'none';
+                        document.getElementById('announcement-section').style.display = 'block';
+                    }
+
+                    // Access granted
+                    if (window.opener && !window.opener.closed) {
+                        window.opener.postMessage({ type: 'authSuccess', user: result.user }, window.location.origin);
+                        window.close();
+                    } else {
+                        window.location.href = '/login_admin.html';
+                    }
+                }
+            } catch (error) {
+                alert('Google登入失敗: ' + error.message);
+            }
+        }
+
+/*
        async function googleLogin() {
+
             const provider = new firebase.auth.GoogleAuthProvider();
             try {
                 const result = await auth.signInWithPopup(provider);
@@ -239,7 +291,7 @@
                 alert('Google登入失敗: ' + error.message);
             }
         }
-
+*/
 
         async function insertService() {
         const user = auth.currentUser;
