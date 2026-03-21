@@ -69,35 +69,15 @@
     <button class="tab-button" onclick="showTab('training')">訓練</button>
     <button class="tab-button" onclick="showTab('services')">服務</button>
     <button class="tab-button" onclick="showTab('activities')">活動</button>
-    <button class="tab-button" onclick="showTab('admin')">管理員</button>
+    <button class="tab-button" onclick="showTab('admin-a')">管理員</button>
 </div>
 
 <div id="training" class="tab-content"></div>
 <div id="activities" class="tab-content"></div>
 <div id="services" class="tab-content"></div>
 <div id="announcement" class="tab-content"></div>
-<div id="admin" class="tab-content" style="width:100%; height:80vh;"">
-    <iframe id="admin-frame" src="login_admin.html" style="width:100%; height:80vh; border:none;"></iframe>
-</div>
-<div id="admin-login-container" style="display:none;">
-    <div id="admin-container" style="display:none;">
-        <h1>Admin Dashboard</h1>
-        <h2>新增公告</h2>
-        <div class="input-group">
-            <label for="title">標題:</label>
-            <input type="text" id="title">
-        </div>
-        <div class="input-group">
-            <label for="desc">描述:</label>
-            <input type="text" id="desc">
-        </div>
-        <div class="input-group">
-            <label for="expiry_date_id">有效期至:</label>
-            <input type="text" id="expiry_date_id" placeholder="YYYYMMDD">
-        </div>
-        <button class="submit-btn" onclick="insertAnnouncement()">提交</button>
-        <button class="submit-btn" onclick="logout()" style="margin-top: 20px;">登出</button>
-    </div>
+<div id="admin-a" class="tab-content" style="width:100%; min-height:80vh;">
+    <iframe id="admin-a-frame" src="admin_panel.html" style="width:100%; height:80vh; border:none;"></iframe>
 </div>
 
 <script>
@@ -109,7 +89,7 @@
         }
     });
     async function loadContent(tabName) {
-        const tabNames = {'training': '訓練', 'activities': '活動', 'services': '服務', 'announcement': '公告', 'admin': '管理員'};
+        const tabNames = {'training': '訓練', 'activities': '活動', 'services': '服務', 'announcement': '公告'};
         const contentDiv = document.getElementById(tabName);
 
         //config
@@ -178,14 +158,10 @@
                 tab.style.display = 'none';
             }
         });
-        if (tabName === 'admin') {
-            const adminTab = document.getElementById('admin');
-            if (adminTab) {
-                adminTab.style.display = 'block';
-                const adminFrame = document.getElementById('admin-frame');
-                if (adminFrame) {
-                    adminFrame.style.display = 'block';
-                }
+        if (tabName === 'admin-a') {
+            const adminATab = document.getElementById('admin-a');
+            if (adminATab) {
+                adminATab.style.display = 'block';
             }
         } else {
             const tab = document.getElementById(tabName);
@@ -195,6 +171,7 @@
             }
         }
     }
+
 </script>
 </body>
 </html>
