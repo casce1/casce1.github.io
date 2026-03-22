@@ -7,516 +7,303 @@
     <script src="./firebase-config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
-    <title>管理員A</title>
+    <title>管理員後台</title>
     <style>
+        :root {
+            --primary: #0066cc;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --radius: 12px;
+        }
         body {
-            font-family: 'Microsoft JhengHei', Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
             padding: 20px;
-            background: #f5f6f8;
         }
-        .card {
-            background: #fff;
-            border-radius: 10px;
-            border: 1px solid #e2e2e2;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            padding: 16px;
+        #login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: var(--card);
+            padding: 40px;
+            border-radius: var(--radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
         }
-        .toolbar {
+        .admin-header {
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 14px;
+            justify-content: space-between;
+            background: var(--card);
+            padding: 15px 25px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            align-items: center;
         }
-        .submit-btn {
-            background-color: #0066cc;
-            color: white;
-            border: none;
-            padding: 9px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .submit-btn:hover { background-color: #004c99; }
-        .submit-btn.secondary {
-            background: #eef5ff;
-            color: #0d4a94;
-        }
-        .submit-btn.secondary:hover { background: #dcecff; }
         .grid {
             display: grid;
-            grid-template-columns: 1fr 1.6fr;
-            gap: 14px;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
         }
-        .input-group { margin-bottom: 12px; }
-        .input-group label { display: block; margin-bottom: 4px; font-weight: 600; }
-        .input-group input, .input-group select {
+        .card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border: 1px solid var(--border);
+        }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+        input, select, textarea {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
             box-sizing: border-box;
         }
-        .record-list { margin-top: 8px; }
-        .table-wrapper {
-            overflow-x: auto;
-            background: #fff;
-            border: 1px solid #d8d8d8;
-            border-radius: 6px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 760px;
-        }
-        th, td {
-            padding: 9px;
-            border-bottom: 1px solid #ececec;
-            text-align: left;
-            vertical-align: top;
-        }
-        th {
-            background: #f8fbff;
-            white-space: nowrap;
-        }
-        tr.clickable-row { cursor: pointer; }
-        tr.clickable-row:hover { background: #f5f9ff; }
-        tr.selected-row { background: #eaf3ff; }
-        .status-pill {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: 12px;
+        .btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
             font-weight: 600;
+            transition: 0.2s;
         }
-        .status-visible { background: #e8f7ee; color: #1d7a3a; }
-        .status-hidden { background: #fbeaea; color: #9b1c1c; }
-        .pagination { margin-top: 12px; text-align: center; }
-        .pagination button { margin: 0 5px; }
-        .loading-indicator { margin-top: 8px; color: #444; font-size: 14px; }
-        #main-container { display: none; }
-        @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: #f1f5f9; color: var(--text); }
+        .btn-outline.active { background: var(--primary); color: white; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; padding: 12px; background: #f1f5f9; font-size: 0.85rem; }
+        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        tr.clickable-row:hover { background: #f8fbff; cursor: pointer; }
+        tr.selected-row { background: #eff6ff; outline: 2px solid var(--primary); }
+        
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <div id="login-container" class="card">
-        <h2>RESTRICTED AREA</h2>
-        <button class="submit-btn" onclick="googleLogin()">Sign in</button>
-    </div>
 
-    <div id="main-container">
-        <div class="card" style="margin-bottom: 14px;">
-            <div class="toolbar">
-                <button class="submit-btn secondary" onclick="setPanel('create')">新增資料</button>
-                <button class="submit-btn secondary" onclick="setPanel('update')">更新資料</button>
-                <button class="submit-btn" onclick="logout()">登出</button>
-            </div>
-            <div class="input-group">
-                <label for="type-select">資料類型</label>
-                <select id="type-select" onchange="handleTypeChange()">
-                    <option value="announcement">公告</option>
-                    <option value="training">訓練</option>
-                    <option value="services">服務</option>
-                    <option value="activities">活動</option>
-                </select>
-            </div>
+<div id="login-container">
+    <h2 style="color: var(--primary)">管理系統</h2>
+    <button class="btn btn-primary" onclick="googleLogin()" style="width: 100%">僅供受權人仕登入</button>
+</div>
+
+<div id="main-container" style="display:none;">
+    <div class="admin-header">
+        <div style="display:flex; gap:15px; align-items:center;">
+            <select id="type-select" onchange="handleTypeChange()" style="width:150px">
+                <option value="announcement">📢 公告管理</option>
+                <option value="training">🏋️ 訓練課程</option>
+                <option value="services">🤝 服務項目</option>
+                <option value="activities">🎉 最新活動</option>
+            </select>
         </div>
-
-        <div class="grid">
-            <div class="card" id="create-panel">
-                <h3>新增</h3>
-                <div class="input-group">
-                    <label for="c-title">標題</label>
-                    <input id="c-title" type="text">
-                </div>
-                <div class="input-group" id="c-desc-group">
-                    <label for="c-desc">描述</label>
-                    <input id="c-desc" type="text">
-                </div>
-                <div class="input-group non-ann">
-                    <label for="c-date">日期</label>
-                    <input id="c-date" type="text">
-                </div>
-                <div class="input-group non-ann">
-                    <label for="c-time">時間</label>
-                    <input id="c-time" type="text">
-                </div>
-                <div class="input-group non-ann">
-                    <label for="c-location">地點</label>
-                    <input id="c-location" type="text">
-                </div>
-                <div class="input-group non-ann">
-                    <label for="c-remark">備註1</label>
-                    <input id="c-remark" type="text">
-                </div>
-                <div class="input-group non-ann">
-                    <label for="c-remark2">備註2</label>
-                    <input id="c-remark2" type="text">
-                </div>
-                <div class="input-group">
-                    <label for="c-expire">有效期至</label>
-                    <input id="c-expire" type="text" placeholder="YYYYMMDD">
-                </div>
-                <button class="submit-btn" onclick="createRecord()">提交新增</button>
-            </div>
-
-            <div class="card" id="update-panel" style="display:none;">
-                <h3>更新</h3>
-                <div class="record-list" id="record-list"></div>
-                <div class="pagination" id="pagination"></div>
-                <div class="loading-indicator" id="loading-indicator" style="display:none;">讀取中...</div>
-                <div id="edit-form" style="display:none; margin-top: 12px;">
-                    <div class="input-group">
-                        <label for="edit-title">標題</label>
-                        <input id="edit-title" type="text">
-                    </div>
-                    <div class="input-group" id="edit-desc-group">
-                        <label for="edit-desc">描述</label>
-                        <input id="edit-desc" type="text">
-                    </div>
-                    <div class="input-group" id="edit-date-group">
-                        <label for="edit-date">日期</label>
-                        <input id="edit-date" type="text">
-                    </div>
-                    <div class="input-group" id="edit-time-group">
-                        <label for="edit-time">時間</label>
-                        <input id="edit-time" type="text">
-                    </div>
-                    <div class="input-group" id="edit-location-group">
-                        <label for="edit-location">地點</label>
-                        <input id="edit-location" type="text">
-                    </div>
-                    <div class="input-group" id="edit-remark-group">
-                        <label for="edit-remark">備註</label>
-                        <input id="edit-remark" type="text">
-                    </div>
-                    <div class="input-group" id="edit-remark2-group">
-                        <label for="edit-remark2">備註2</label>
-                        <input id="edit-remark2" type="text">
-                    </div>
-                    <div class="input-group">
-                        <label for="edit-expire">有效期至</label>
-                        <input id="edit-expire" type="text" placeholder="YYYYMMDD">
-                    </div>
-                    <div class="input-group">
-                        <label for="edit-display">顯示狀態</label>
-                        <select id="edit-display">
-                            <option value="Y">顯示</option>
-                            <option value="N">隱藏</option>
-                        </select>
-                    </div>
-                    <button class="submit-btn" onclick="saveChanges()">更新</button>
-                    <button class="submit-btn secondary" onclick="cancelEdit()">取消</button>
-                </div>
-            </div>
+        <div style="display:flex; gap:8px;">
+            <button id="nav-create" class="btn btn-outline active" onclick="setPanel('create')">新增模式</button>
+            <button id="nav-update" class="btn btn-outline" onclick="setPanel('update')">編輯模式</button>
+            <button class="btn" onclick="logout()" style="background:#fee2e2; color:#b91c1c">登出</button>
         </div>
     </div>
 
-    <script>
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const PAGE_SIZE = 5;
-        const paginationStore = {};
-        const COLLECTIONS = Object.freeze({
-            announcement: "announcement",
-            training: "training",
-            services: "services",
-            activities: "activities"
-        });
-        const ALLOWED_HASHES = [
-            "c9fa9cbff8a6d8303163cf34c81624b33938758d1c9899c66a6d84b3a980dc0f",
-            "67b8d4621b0c28456f018f20572d7d0c23e20449f5bf4942859f798045063b03"
-        ];
+    <div class="grid">
+        <div class="card">
+            <h3 id="form-title">新增資料</h3>
+            <div id="dynamic-fields"></div>
+            <button class="btn btn-primary" id="submit-btn" onclick="handleSubmit()" style="width:100%; margin-top:15px;">確認提交</button>
+            <button class="btn btn-outline" id="cancel-btn" onclick="cancelEdit()" style="width:100%; margin-top:8px; display:none;">取消返回新增</button>
+        </div>
 
-        let mode = "create";
-        let currentType = "announcement";
-        let currentPage = 1;
-        let selectedRecord = null;
-        let isLoading = false;
-        let activeLoadToken = 0;
+        <div class="card">
+            <h3 id="list-title">載入中...</h3>
+            <div id="record-list" style="overflow-x:auto; max-height: 600px;"></div>
+        </div>
+    </div>
+</div>
 
-        function setPanel(panel) {
-            mode = panel;
-            document.getElementById("create-panel").style.display = panel === "create" ? "block" : "none";
-            document.getElementById("update-panel").style.display = panel === "update" ? "block" : "none";
-            if (panel === "update") {
-                currentPage = 1;
-                loadRecords(currentType, true);
-            }
+<script>
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const COLLECTIONS = { announcement: "announcement", training: "training", services: "services", activities: "activities" };
+    const ALLOWED_HASHES = ["c9fa9cbff8a6d8303163cf34c81624b33938758d1c9899c66a6d84b3a980dc0f", "67b8d4621b0c28456f018f20572d7d0c23e20449f5bf4942859f798045063b03"];
+
+    let currentType = "announcement";
+    let selectedId = null;
+    let mode = "create";
+
+    // 介面切換邏輯
+    function setPanel(newMode) {
+        mode = newMode;
+        const isUpdate = (mode === "update");
+        
+        // 更新按鈕樣式
+        document.getElementById("nav-create").classList.toggle("active", !isUpdate);
+        document.getElementById("nav-update").classList.toggle("active", isUpdate);
+        
+        // 更新標題與按鈕文字
+        document.getElementById("form-title").innerText = isUpdate ? "編輯選中資料" : "新增資料";
+        document.getElementById("submit-btn").innerText = isUpdate ? "儲存更新" : "確認新增";
+        document.getElementById("cancel-btn").style.display = isUpdate ? "block" : "none";
+
+        if (!isUpdate) {
+            clearForm();
         }
+    }
 
-        function toggleCreateFields() {
-            const isAnnouncement = currentType === "announcement";
-            document.getElementById("c-desc-group").style.display = isAnnouncement ? "block" : "none";
-            document.querySelectorAll(".non-ann").forEach(el => {
-                el.style.display = isAnnouncement ? "none" : "block";
+    function renderFields() {
+        const isAnn = currentType === "announcement";
+        let html = `
+            <div class="input-group"><label>標題</label><input id="f-title" type="text"></div>
+            ${isAnn ? `<div class="input-group"><label>內容</label><textarea id="f-desc" rows="5"></textarea></div>` : `
+                <div class="input-group"><label>日期</label><input id="f-date" type="text" placeholder="例：31-12-2024"></div>
+                <div class="input-group"><label>時間</label><input id="f-time" type="text"></div>
+                <div class="input-group"><label>地點</label><input id="f-location" type="text"></div>
+                <div class="input-group"><label>備註 1</label><input id="f-remark" type="text"></div>
+                <div class="input-group"><label>備註 2</label><input id="f-remark2" type="text"></div>
+            `}
+            <div class="input-group"><label>有效期至 (YYYYMMDD)</label><input id="f-expire" type="text" placeholder="例：20241231"></div>
+            <div class="input-group" id="display-group" style="display:${mode === 'update' ? 'block' : 'none'};">
+                <label>顯示狀態</label>
+                <select id="f-display"><option value="Y">顯示</option><option value="N">隱藏</option></select>
+            </div>
+        `;
+        document.getElementById("dynamic-fields").innerHTML = html;
+    }
+
+    // 登入驗證 (保留原邏輯)
+    async function sha256(text) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(text);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    async function googleLogin() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        try {
+            const result = await auth.signInWithPopup(provider);
+            const hashedEmail = await sha256(result.user.email.toLowerCase().trim());
+            if (!ALLOWED_HASHES.includes(hashedEmail)) {
+                alert("未授權！"); await auth.signOut();
+            }
+        } catch (e) { alert("登入失敗"); }
+    }
+
+    auth.onAuthStateChanged(user => {
+        document.getElementById("login-container").style.display = user ? "none" : "block";
+        document.getElementById("main-container").style.display = user ? "block" : "none";
+        if(user) { 
+            renderFields(); 
+            loadRecords(); // 登入後立即顯示列表
+        }
+    });
+
+    function logout() { auth.signOut(); window.location.reload(); }
+
+    function handleTypeChange() {
+        currentType = document.getElementById("type-select").value;
+        cancelEdit();
+        loadRecords();
+    }
+
+    // 載入列表
+    async function loadRecords() {
+        const typeLabel = document.getElementById("type-select").options[document.getElementById("type-select").selectedIndex].text;
+        document.getElementById("list-title").innerText = `${typeLabel} 列表 (最新 20 筆)`;
+        
+        try {
+            const snap = await db.collection(COLLECTIONS[currentType]).orderBy("seq", "desc").limit(20).get();
+            let html = `<table><thead><tr><th>標題</th><th>${currentType === 'announcement' ? '內容摘要' : '日期'}</th><th>狀態</th></tr></thead><tbody>`;
+            snap.forEach(doc => {
+                const d = doc.data();
+                const activeClass = selectedId === doc.id ? 'selected-row' : '';
+                const secondaryInfo = currentType === 'announcement' ? (d.desc ? d.desc.substring(0,10)+'...' : '-') : (d.date || '-');
+                
+                html += `<tr class="clickable-row ${activeClass}" onclick="selectRow('${doc.id}')">
+                    <td><strong>${d.title}</strong></td>
+                    <td>${secondaryInfo}</td>
+                    <td>${d.display === 'Y' ? '✅' : '❌'}</td>
+                </tr>`;
             });
+            html += `</tbody></table>`;
+            document.getElementById("record-list").innerHTML = html;
+        } catch (e) {
+            document.getElementById("record-list").innerHTML = "載入失敗：" + e.message;
+        }
+    }
+
+    // 點擊列表自動進入編輯
+    async function selectRow(id) {
+        selectedId = id;
+        setPanel('update');
+        renderFields();
+        
+        const doc = await db.collection(COLLECTIONS[currentType]).doc(id).get();
+        const d = doc.data();
+        
+        document.getElementById("f-title").value = d.title || "";
+        document.getElementById("f-expire").value = d.expiry_date_id || "";
+        document.getElementById("f-display").value = d.display || "Y";
+        if(currentType === 'announcement') {
+            document.getElementById("f-desc").value = d.desc || "";
+        } else {
+            document.getElementById("f-date").value = d.date || "";
+            document.getElementById("f-time").value = d.time || "";
+            document.getElementById("f-location").value = d.location || "";
+            document.getElementById("f-remark").value = d.remark || "";
+            document.getElementById("f-remark2").value = d.remark2 || "";
+        }
+        loadRecords(); // 更新高亮
+    }
+
+    function clearForm() {
+        const inputs = document.querySelectorAll('#dynamic-fields input, #dynamic-fields textarea');
+        inputs.forEach(i => i.value = "");
+        selectedId = null;
+    }
+
+    function cancelEdit() {
+        setPanel('create');
+        renderFields();
+        loadRecords();
+    }
+
+    async function handleSubmit() {
+        const payload = {
+            title: document.getElementById("f-title").value,
+            expiry_date_id: document.getElementById("f-expire").value,
+            display: mode === "update" ? document.getElementById("f-display").value : "Y",
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        if(!payload.title) return alert("標題必填");
+
+        if(currentType === 'announcement') {
+            payload.desc = document.getElementById("f-desc").value;
+        } else {
+            payload.date = document.getElementById("f-date").value;
+            payload.time = document.getElementById("f-time").value;
+            payload.location = document.getElementById("f-location").value;
+            payload.remark = document.getElementById("f-remark").value;
+            payload.remark2 = document.getElementById("f-remark2").value;
         }
 
-        function handleTypeChange() {
-            currentType = document.getElementById("type-select").value;
-            currentPage = 1;
-            selectedRecord = null;
-            document.getElementById("edit-form").style.display = "none";
-            toggleCreateFields();
-            if (mode === "update") loadRecords(currentType, true);
-        }
-
-        function getPaginationState(type) {
-            if (!paginationStore[type]) paginationStore[type] = { pages: {}, lastDocs: {}, hasNext: {} };
-            return paginationStore[type];
-        }
-
-        function resetPaginationState(type) {
-            paginationStore[type] = { pages: {}, lastDocs: {}, hasNext: {} };
-        }
-
-        function setLoading(loading) {
-            isLoading = loading;
-            document.getElementById("loading-indicator").style.display = loading ? "block" : "none";
-            renderPagination();
-        }
-
-        async function sha256(text) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(text);
-            const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
-        }
-
-        async function googleLogin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            try {
-                const result = await auth.signInWithPopup(provider);
-                if (!result.user) return;
-                const email = (result.user.email || "").toLowerCase().trim();
-                const hashedEmail = await sha256(email);
-                if (!ALLOWED_HASHES.includes(hashedEmail)) {
-                    alert("Access denied: This email is not authorized.");
-                    await auth.signOut();
-                }
-            } catch (error) {
-                alert("Google登入失敗: " + error.message);
-            }
-        }
-
-        auth.onAuthStateChanged(function(user) {
-            if (user) {
-                document.getElementById("login-container").style.display = "none";
-                document.getElementById("main-container").style.display = "block";
-                toggleCreateFields();
-                setPanel("create");
+        try {
+            if(mode === "create") {
+                const last = await db.collection(COLLECTIONS[currentType]).orderBy("seq", "desc").limit(1).get();
+                payload.seq = last.empty ? 1 : (Number(last.docs[0].data().seq) || 0) + 1;
+                await db.collection(COLLECTIONS[currentType]).add(payload);
+                alert("新增成功");
             } else {
-                document.getElementById("login-container").style.display = "block";
-                document.getElementById("main-container").style.display = "none";
+                await db.collection(COLLECTIONS[currentType]).doc(selectedId).update(payload);
+                alert("更新成功");
             }
-        });
-
-        async function logout() {
-            await auth.signOut();
-            window.location.href = "/admin_panel.html";
-        }
-
-        async function getNextSeq(collection) {
-            const snap = await db.collection(collection).orderBy("seq", "desc").limit(1).get();
-            if (snap.empty) return 1;
-            const current = Number(snap.docs[0].data().seq || 0);
-            return current + 1;
-        }
-
-        async function createRecord() {
-            const user = auth.currentUser;
-            if (!user) return alert("請先登入！");
-            const collection = COLLECTIONS[currentType];
-            const title = document.getElementById("c-title").value.trim();
-            const expire = document.getElementById("c-expire").value.trim();
-            if (!title || !expire) return alert("請填寫必要欄位！");
-
-            const payload = {
-                seq: await getNextSeq(collection),
-                title,
-                display: "Y",
-                expiry_date_id: expire,
-                createdBy: user.uid,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            if (currentType === "announcement") {
-                const desc = document.getElementById("c-desc").value.trim();
-                if (!desc) return alert("請填寫描述！");
-                payload.desc = desc;
-            } else {
-                const date = document.getElementById("c-date").value.trim();
-                const time = document.getElementById("c-time").value.trim();
-                const location = document.getElementById("c-location").value.trim();
-                if (!date || !time || !location) return alert("請填寫日期、時間、地點！");
-                payload.date = date;
-                payload.time = time;
-                payload.location = location;
-                payload.remark = document.getElementById("c-remark").value.trim();
-                payload.remark2 = document.getElementById("c-remark2").value.trim();
-            }
-
-            await db.collection(collection).add(payload);
-            alert("新增成功！");
-            ["c-title", "c-desc", "c-date", "c-time", "c-location", "c-remark", "c-remark2", "c-expire"].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.value = "";
-            });
-        }
-
-        async function loadRecords(type = "announcement", forceRefresh = false) {
-            const loadToken = ++activeLoadToken;
-            currentType = type;
-            try {
-                setLoading(true);
-                if (forceRefresh) resetPaginationState(type);
-                const pageState = getPaginationState(type);
-
-                if (!forceRefresh && pageState.pages[currentPage]) {
-                    if (loadToken !== activeLoadToken) return [];
-                    renderRecords(pageState.pages[currentPage], type);
-                    renderPagination(type);
-                    return pageState.pages[currentPage];
-                }
-
-                let query = db.collection(COLLECTIONS[type]).orderBy("seq", "desc");
-                if (currentPage > 1) {
-                    const prevLast = pageState.lastDocs[currentPage - 1];
-                    if (!prevLast) {
-                        currentPage = 1;
-                        return loadRecords(type, false);
-                    }
-                    query = query.startAfter(prevLast);
-                }
-                const snapshot = await query.limit(PAGE_SIZE + 1).get();
-                const docs = snapshot.docs;
-                if (loadToken !== activeLoadToken) return [];
-
-                if (docs.length === 0) {
-                    if (currentPage > 1) currentPage--;
-                    renderPagination(type);
-                    return [];
-                }
-
-                const hasNextPage = docs.length > PAGE_SIZE;
-                const pageDocs = hasNextPage ? docs.slice(0, PAGE_SIZE) : docs;
-                const records = pageDocs.map(doc => ({ id: doc.id, ...doc.data() }));
-                pageState.pages[currentPage] = records;
-                pageState.lastDocs[currentPage] = pageDocs[pageDocs.length - 1] || null;
-                pageState.hasNext[currentPage] = hasNextPage;
-                renderRecords(records, type);
-                renderPagination(type);
-                return records;
-            } finally {
-                if (loadToken === activeLoadToken) setLoading(false);
-            }
-        }
-
-        function renderRecords(records, type) {
-            const list = document.getElementById("record-list");
-            if (!records.length) {
-                list.innerHTML = '<div class="table-wrapper"><table><tbody><tr><td>目前沒有資料</td></tr></tbody></table></div>';
-                return;
-            }
-            const ann = type === "announcement";
-            const headers = ann ? ["序號", "標題", "描述", "顯示", "有效日期"] : ["序號", "標題", "日期", "時間", "地點", "備註", "備註2", "顯示", "有效日期"];
-            const rows = records.map(r => {
-                const displayText = r.display === "Y" ? "顯示" : "隱藏";
-                const displayClass = r.display === "Y" ? "status-visible" : "status-hidden";
-                const selectedClass = selectedRecord === r.id ? "selected-row" : "";
-                if (ann) {
-                    return `<tr class="clickable-row ${selectedClass}" data-id="${r.id}" onclick="selectRecord('${r.id}', '${type}')"><td>${r.seq ?? ""}</td><td>${r.title ?? ""}</td><td>${r.desc ?? ""}</td><td><span class="status-pill ${displayClass}">${displayText}</span></td><td>${r.expiry_date_id ?? ""}</td></tr>`;
-                }
-                return `<tr class="clickable-row ${selectedClass}" data-id="${r.id}" onclick="selectRecord('${r.id}', '${type}')"><td>${r.seq ?? ""}</td><td>${r.title ?? ""}</td><td>${r.date ?? ""}</td><td>${r.time ?? ""}</td><td>${r.location ?? ""}</td><td>${r.remark ?? ""}</td><td>${r.remark2 ?? ""}</td><td><span class="status-pill ${displayClass}">${displayText}</span></td><td>${r.expiry_date_id ?? ""}</td></tr>`;
-            }).join("");
-            list.innerHTML = `<div class="table-wrapper"><table><thead><tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>`;
-        }
-
-        function renderPagination(type = currentType) {
-            const pageState = getPaginationState(type);
-            const hasNext = Boolean(pageState.hasNext[currentPage]);
-            document.getElementById("pagination").innerHTML = `
-                <button onclick="prevPage()" ${currentPage === 1 ? "disabled" : ""}>上一頁</button>
-                <span>第 ${currentPage} 頁</span>
-                <button onclick="nextPage()" ${(hasNext && !isLoading) ? "" : "disabled"}>下一頁</button>
-            `;
-        }
-
-        async function prevPage() {
-            if (isLoading || currentPage === 1) return;
-            currentPage--;
-            await loadRecords(currentType);
-        }
-
-        async function nextPage() {
-            if (isLoading) return;
-            const pageState = getPaginationState(currentType);
-            if (!pageState.hasNext[currentPage]) return;
-            currentPage++;
-            await loadRecords(currentType);
-        }
-
-        async function selectRecord(id, type) {
-            selectedRecord = id;
-            const doc = await db.collection(COLLECTIONS[type]).doc(id).get();
-            const data = doc.data() || {};
-            document.getElementById("edit-title").value = data.title || "";
-            if (type === "announcement") {
-                document.getElementById("edit-desc-group").style.display = "block";
-                document.getElementById("edit-date-group").style.display = "none";
-                document.getElementById("edit-time-group").style.display = "none";
-                document.getElementById("edit-location-group").style.display = "none";
-                document.getElementById("edit-remark-group").style.display = "none";
-                document.getElementById("edit-remark2-group").style.display = "none";
-                document.getElementById("edit-desc").value = data.desc || "";
-            } else {
-                document.getElementById("edit-desc-group").style.display = "none";
-                document.getElementById("edit-date-group").style.display = "block";
-                document.getElementById("edit-time-group").style.display = "block";
-                document.getElementById("edit-location-group").style.display = "block";
-                document.getElementById("edit-remark-group").style.display = "block";
-                document.getElementById("edit-remark2-group").style.display = "block";
-                document.getElementById("edit-date").value = data.date || "";
-                document.getElementById("edit-time").value = data.time || "";
-                document.getElementById("edit-location").value = data.location || "";
-                document.getElementById("edit-remark").value = data.remark || "";
-                document.getElementById("edit-remark2").value = data.remark2 || "";
-            }
-            document.getElementById("edit-expire").value = data.expiry_date_id || "";
-            document.getElementById("edit-display").value = data.display || "Y";
-            document.getElementById("edit-form").style.display = "block";
-        }
-
-        async function saveChanges() {
-            if (!selectedRecord) return;
-            const type = currentType;
-            const payload = {
-                title: document.getElementById("edit-title").value,
-                display: document.getElementById("edit-display").value,
-                expiry_date_id: document.getElementById("edit-expire").value
-            };
-            if (type === "announcement") {
-                payload.desc = document.getElementById("edit-desc").value;
-            } else {
-                payload.date = document.getElementById("edit-date").value;
-                payload.time = document.getElementById("edit-time").value;
-                payload.location = document.getElementById("edit-location").value;
-                payload.remark = document.getElementById("edit-remark").value;
-                payload.remark2 = document.getElementById("edit-remark2").value;
-            }
-            await db.collection(COLLECTIONS[type]).doc(selectedRecord).update(payload);
-            alert("更新成功！");
             cancelEdit();
-            resetPaginationState(type);
-            await loadRecords(type, true);
-        }
-
-        function cancelEdit() {
-            selectedRecord = null;
-            document.getElementById("edit-form").style.display = "none";
-        }
-    </script>
+        } catch (e) { alert("儲存失敗：" + e.message); }
+    }
+</script>
 </body>
 </html>
