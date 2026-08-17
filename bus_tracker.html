@@ -129,7 +129,7 @@ const STATION_DATA = {
             { type: 'kmb', stop: '0C943B7308FF4DCC', route: '64K',  service: '1', fare: '6.7', fare_remarks: '(分段收費)'},
             { type: 'kmb', stop: '0C943B7308FF4DCC', route: '77K',  service: '1', fare: '6.7', fare_remarks: '(分段收費)' },
             { type: 'kmb', stop: '0C943B7308FF4DCC', route: '54',   service: '1', fare: '6.7', fare_remarks: '(分段收費)' },
-            { type: 'kmb', stop: '0C943B7308FF4DCC', route: '251C', service: '1', fare: '6.7', fare_remarks: '(分段收費)' },
+            { type: 'kmb', stop: '0C943B7308FF4DCC', route: '251C', service: '1', fare: '6.7', fare_remarks: '' },
             { type: 'kmb', stop: '723EF8D7809D3ADB', route: 'N368', service: '1', fare: '39', fare_remarks: '' },
             { type: 'kmb', stop: '53AC50E46ABDA85B', route: 'N269', service: '1', fare: '14.3', fare_remarks: '' }
         ],
@@ -377,7 +377,7 @@ const STATION_DATA = {
                 <li class="bus-item">
                     <div class="route-badge ${badgeClass}">${bus.route}</div>
                     <div class="bus-details">
-                        <div class="dest">往 ${destName} ${fareHtml} ${fare_remarks}</div>
+                        <div class="dest">往 ${destName} ${fareHtml} <div class="remark">${fare_remarks}</div></div>
                         <div class="remark">${remark}</div>
                     </div>
                     <div class="eta-container">
