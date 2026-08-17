@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交通實時到站預報</title>
+    <style>
+        :root {
+            --kmb-red: #d32f2f;
+            --kmb-dark: #b71c1c;
+            --gmb-green: #2e7d32;
+            --text-main: rgb(103, 125, 197);
+            --bg-color: #f0f2f5;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-color); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .dashboard { background: white; width: 100%; max-width: 450px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); overflow: hidden; }
+        
+        .header { background: var(--text-main); color: white; padding: 20px; text-align: center; }
+        .header h2 { margin: 0 0 12px 0; font-size: 1.4rem; }
+        .station-select { 
+            width: 100%; padding: 10px; font-size: 1rem; border-radius: 8px; 
+            border: none; outline: none; cursor: pointer; background: white; 
+            color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .controls { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; background: #fafafa; }
+        .last-updated { font-size: 0.8rem; color: #666; }
+        .btn-refresh { background: var(--text-main); color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        
+        .bus-list { padding: 0; margin: 0; list-style: none; min-height: 200px; }
+        .bus-item { display: flex; align-items: center; padding: 16px; border-bottom: 1px solid #f0f0f0; transition: background 0.2s; }
+        .bus-item:hover { background: #f9f9f9; }
+        
+        /* 路線徽章 */
+        .route-badge { color: white; font-size: 1.2rem; font-weight: 800; min-width: 60px; text-align: center; padding: 8px; border-radius: 8px; margin-right: 16px; }
+        .bg-kmb { background: var(--kmb-red); }
+        .bg-gmb { background: var(--gmb-green); }
+
+        .bus-details { flex-grow: 1; }
+        .dest { font-weight: 600; color: var(--text-main); font-size: 0.95rem; display: flex; align-items: center; }
+        
+        .fare-badge { 
+            background: #fff3e0; color: #e65100; font-size: 0.75rem; 
+            padding: 2px 6px; border-radius: 6px; margin-left: 8px; 
+            font-weight: bold; border: 1px solid #ffe0b2;
+        }
+
+        .remark { font-size: 0.75rem; color: #888; margin-top: 4px; }
+        
+        /* 時間顯示排版 */
+        .eta-container { display: flex; flex-direction: column; align-items: flex-end; min-width: 80px; }
+        .actual-time { font-size: 0.85rem; color: #555; font-weight: 600; margin-bottom: 4px; }
+        .eta-time { font-size: 1.2rem; font-weight: 700; color: #2e7d32; text-align: right; }
+        
+        .message { padding: 40px 20px; text-align: center; color: #666; font-size: 0.9rem; }
+        .arriving { color: var(--kmb-red); }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="header">
+        <h2>實時到站預報</h2>
+        <select id="station-select" class="station-select" onchange="fetchPreciseData()">
+            <option value="ksr">錦上路站 (往元朗方向)</option>
+            <option value="hkpt_yl">下高埔村 (往元朗方向)</option>
+            <option value="riva">爾巒小巴站</option>
+            <option value="yuenlong_yoho2">元朗形點II (往錦田方向)</option>
+        </select>
+    </div>
+    
+    <div class="controls">
+        <span class="last-updated" id="timestamp">更新中...</span>
+        <button class="btn-refresh" onclick="fetchPreciseData()">手動更新</button>
+    </div>
+    
+    <ul class="bus-list" id="bus-list">
+        <div class="message">正在讀取實時數據...</div>
+    </ul>
+</div>
+
+<script>
+const STATION_DATA = {
+        "riva": [
+            //{ type: 'gmb', endpoint: '2008752/1/1', route: '602C', dest: '錦上路', fare: '6' },
+            { 
+                type: 'gmb_self', route: '602C', dest: '錦上路', fare: '6', 
+                timetable: {
+                    wday: ['06:25', '06:35', '06:45', '07:00', '07:15', '07:30', '07:45', '07:53', '08:00', '08:07', '08:15', '08:22', '08:30', '08:37', '08:45', '08:52', '09:00', '09:07', '09:22', '09:15', '09:22', '09:30', '09:45', '10:00', '10:20', '10:40', '11:00', '11:20', '11:40', '12:00', '12:20', '12:40', '13:00', '13:20', '13:40', '14:00', '14:10', '14:30', '14:50', '15:10', '15:30', '15:50', '16:10', '16:30', '16:50', '17:10', '17:30', '17:50', '18:10', '18:30', '18:50', '19:10', '19:30', '19:50', '20:10', '20:30', '20:50', '21:10', '21:30', '21:50'],
+                    sat:  ['07:00', '07:15', '07:30', '07:45', '08:00', '08:15', '08:30', '08:45', '09:00', '09:15', '09:30', '09:45', '10:00', '10:20', '10:40', '11:00', '11:20', '11:40', '12:00', '12:20', '12:40', '13:00', '13:20', '13:40', '14:00', '14:10', '14:30', '14:50', '15:10', '15:30', '15:50', '16:10', '16:30', '16:50', '17:10', '17:30', '17:50', '18:10', '18:30', '18:50', '19:10', '19:30', '19:50', '20:10', '20:30', '20:50', '21:10', '21:30', '21:50'],
+                    sun:  ['07:00', '07:15', '07:30', '07:45', '08:00', '08:15', '08:30', '08:45', '09:00', '09:15', '09:30', '09:45', '10:00', '10:20', '10:40', '11:00', '11:20', '11:40', '12:00', '12:20', '12:40', '13:00', '13:20', '13:40', '14:00', '14:10', '14:30', '14:50', '15:10', '15:30', '15:50', '16:10', '16:30', '16:50', '17:10', '17:30', '17:50', '18:10', '18:30', '18:50', '19:10', '19:30', '19:50', '20:10', '20:30', '20:50', '21:10', '21:30', '21:50']
+                }
+            },
+            { 
+                type: 'gmb_self', route: '601C', dest: '元朗', fare: '6', 
+                timetable: {
+                    wday: ['06:50', '07:10', '07:30', '07:50', '08:10', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00'],
+                    sat:  ['07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00'],
+                    sun:  ['07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:0', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00']
+                } 
+            }
+        ],
+        "ksr": [
+            { type: 'gmb', endpoint: '2008785/2/1', route: '620', dest: 'Park Yoho', fare: '6' },
+            { type: 'kmb', stop: 'B9CB8D64781C3323', route: '64K',  service: '1', fare: '6.7' },
+            { type: 'kmb', stop: 'B9CB8D64781C3323', route: '77K',  service: '1', fare: '6.7' },
+            { type: 'kmb', stop: 'B9CB8D64781C3323', route: '54',   service: '1', fare: '6.7' },
+            { type: 'kmb', stop: 'C1FA7F4BEE80A723', route: '268',  service: '1', fare: '6.7' },
+            { type: 'kmb', stop: 'A7156FD2BD44D128', route: 'A36',  service: '1', fare: '19.8' },
+            { 
+                type: 'gmb_self', route: '602C', dest: 'RIVA', fare: '6', 
+                timetable: {
+                    wday: ['07:07', '07:22', '07:37', '07:52', '08:07', '08:22', '08:37', '08:52', '09:07', '09:22', '09:37', '09:52', '10:10', '10:30', '10:50', '11:10', '11:30', '11:50', '12:10', '12:30', '12:50', '13:10', '13:30', '13:45', '14:05', '14:20', '14:40', '15:00', '15:20', '15:40', '15:00', '15:20', '15:40', '16:00', '16:20', '16:40', '17:00', '17:20', '17:40', '18:00', '18:20', '18:40', '19:00', '19:20', '19:40', '20:00', '20:20', '20:40', '21:00', '21:20', '21:40', '22:00'],
+                    sat:  ['07:07', '07:22', '07:37', '07:52', '08:07', '08:22', '08:37', '08:52', '09:07', '09:22', '09:37', '09:52', '10:10', '10:30', '10:50', '11:10', '11:30', '11:50', '12:10', '12:30', '12:50', '13:10', '13:30', '13:45', '14:05', '14:20', '14:40', '15:00', '15:20', '15:40', '15:00', '15:20', '15:40', '16:00', '16:20', '16:40', '17:00', '17:20', '17:40', '18:00', '18:20', '18:40', '19:00', '19:20', '19:40', '20:00', '20:20', '20:40', '21:00', '21:20', '21:40', '22:00'],
+                    sun:  ['07:07', '07:22', '07:37', '07:52', '08:07', '08:22', '08:37', '08:52', '09:07', '09:22', '09:37', '09:52', '10:10', '10:30', '10:50', '11:10', '11:30', '11:50', '12:10', '12:30', '12:50', '13:10', '13:30', '13:45', '14:05', '14:20', '14:40', '15:00', '15:20', '15:40', '15:00', '15:20', '15:40', '16:00', '16:20', '16:40', '17:00', '17:20', '17:40', '18:00', '18:20', '18:40', '19:00', '19:20', '19:40', '20:00', '20:20', '20:40', '21:00', '21:20', '21:40', '22:00']
+                } 
+            }
+        ],
+        "yuenlong_yoho2": [
+            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'A36',  service: '1', fare: '6.5' },
+            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'E36',  service: '1', fare: '6.4' },
+            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'X36',  service: '1', fare: '30.1' },
+            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'E36P', service: '1', fare: '14.8' },
+            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'NA36', service: '1', fare: '8.9' },
+            { type: 'kmb', stop: '5CE91F113D08B843', route: '68E',  service: '1', fare: '12.8' },
+            { type: 'kmb', stop: '0C943B7308FF4DCC', route: '64K',  service: '1', fare: '6.7' },
+            { type: 'kmb', stop: '0C943B7308FF4DCC', route: '77K',  service: '1', fare: '6.7' },
+            { type: 'kmb', stop: '0C943B7308FF4DCC', route: '54',   service: '1', fare: '6.7' },
+            { type: 'kmb', stop: '0C943B7308FF4DCC', route: '251C', service: '1', fare: '6.7' },
+            { type: 'kmb', stop: '723EF8D7809D3ADB', route: 'N368', service: '1', fare: '39' },
+            { type: 'kmb', stop: '53AC50E46ABDA85B', route: 'N269', service: '1', fare: '14.3' }
+        ],
+        "hkpt_yl": [
+            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '54',   service: '1', fare: '6.7' },
+            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '64K',  service: '1', fare: '6.7' },
+            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '68E',  service: '1', fare: '11.5' },
+            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '77K',  service: '1', fare: '6.7' }, 
+            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '251C', service: '1', fare: '6.7' },
+            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: 'N269', service: '1', fare: '14.3' },
+            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: 'N368', service: '1', fare: '14.3' },
+            { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'E36',  service: '1', fare: '14.4' },
+            { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'E36P', service: '1', fare: '14.4' },
+            { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'A36',  service: '1', fare: '19.8' },
+            { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'NA36', service: '1', fare: '34.6' }
+        ],
+    };
+
+    async function fetchPreciseData() {
+        const listDiv = document.getElementById('bus-list');
+        const timeDiv = document.getElementById('timestamp');
+        
+        const selectedStationKey = document.getElementById('station-select').value;
+        const queries = STATION_DATA[selectedStationKey];
+        
+        let allValidBuses = [];
+        listDiv.innerHTML = `<div class="message">正在讀取數據...</div>`;
+
+        try {
+            const fetchPromises = queries.map(async (q) => {
+                let res = { data: [] };
+                
+                if (q.type === 'gmb_self') {
+                    const now = new Date();
+                    const selfBuses = [];
+                    let activeTimetable = [];
+
+                    // 判斷 timetable 格式並選取對應星期的陣列
+                    if (q.timetable) {
+                        if (Array.isArray(q.timetable)) {
+                            // 兼容舊版單一陣列寫法
+                            activeTimetable = q.timetable;
+                        } else if (typeof q.timetable === 'object') {
+                            // 交通系統慣例：凌晨 04:00 前算作前一天的營運日
+                            const opDate = new Date(now.getTime() - 4 * 60 * 60 * 1000); 
+                            const dayOfWeek = opDate.getDay(); // 0: 日, 1-5: 一至五, 6: 六
+
+                            if (dayOfWeek === 0) {
+                                activeTimetable = q.timetable.sun || q.timetable.wday || [];
+                            } else if (dayOfWeek === 6) {
+                                activeTimetable = q.timetable.sat || q.timetable.wday || [];
+                            } else {
+                                activeTimetable = q.timetable.wday || [];
+                            }
+                        }
+                    }
+
+                    if (activeTimetable.length > 0) {
+                        const upcomingTimes = [];
+
+                        activeTimetable.forEach(timeStr => {
+                            const [hours, minutes] = timeStr.split(':').map(Number);
+                            
+                            let targetTime = new Date(now);
+                            targetTime.setHours(hours, minutes, 0, 0);
+
+                            // 處理跨日邏輯 (例如凌晨 00:15 的班次，如果現在是 23:50，時間差會變負數，須加一天)
+                            if ((targetTime - now) / 60000 < -120) {
+                                targetTime.setDate(targetTime.getDate() + 1);
+                            } else if ((targetTime - now) / 60000 > 1200) {
+                                // 如果現在是 00:30，班次寫 23:30，代表那是昨晚的車，時間需要減一天
+                                targetTime.setDate(targetTime.getDate() - 1);
+                            }
+
+                            const diffMinutes = (targetTime - now) / 60000;
+
+                            // 只顯示剛過去 2 分鐘，或未來 2 小時內的班次
+                            if (diffMinutes >= -2 && diffMinutes <= 120) {
+                                upcomingTimes.push({
+                                    targetTime,
+                                    diffMinutes
+                                });
+                            }
+                        });
+
+                        upcomingTimes.sort((a, b) => a.targetTime - b.targetTime);
+                        const next4Buses = upcomingTimes.slice(0, 4);
+
+                        next4Buses.forEach(item => {
+                            selfBuses.push({
+                                eta: item.targetTime.toISOString(),
+                                route: q.route,
+                                dest_tc: q.dest,
+                                rmk_tc: "固定時間表班次",
+                                fare: q.fare,
+                                type: 'gmb'
+                            });
+                        });
+                    }
+                    return { data: selfBuses };
+
+                } else if (q.type === 'gmb') {
+                    const targetUrl = `https://data.etagmb.gov.hk/eta/route-stop/${q.endpoint}`;
+                    
+                    try {
+                        const response = await fetch(targetUrl);
+                        if (!response.ok) throw new Error('Direct fetch HTTP error');
+                        res = await response.json();
+                    } catch (directErr) {
+                        try {
+                            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+                            const response = await fetch(proxyUrl);
+                            if (!response.ok) throw new Error('Proxy 1 HTTP error');
+                            res = await response.json();
+                        } catch (proxyErr) {
+                            try {
+                                const backupProxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+                                const response = await fetch(backupProxy);
+                                if (!response.ok) throw new Error('Proxy 2 HTTP error');
+                                res = await response.json();
+                            } catch (backupErr) {
+                                console.error(`[GMB] 所有連線管道失敗: ${q.route}`, backupErr);
+                            }
+                        }
+                    }
+
+                    let gmbEtaArray = [];
+                    if (res && res.data) {
+                        if (Array.isArray(res.data)) {
+                            gmbEtaArray = (res.data[0] && res.data[0].eta) ? res.data[0].eta : [];
+                        } else if (res.data.eta) {
+                            gmbEtaArray = res.data.eta;
+                        }
+                    }
+                    
+                    return {
+                        data: gmbEtaArray.map(etaItem => ({
+                            eta: etaItem.timestamp,
+                            route: q.route,
+                            dest_tc: q.dest,
+                            rmk_tc: etaItem.remarks_tc,
+                            fare: q.fare,
+                            type: 'gmb'
+                        }))
+                    };
+
+                } else {
+                    const fetchUrl = `https://data.etabus.gov.hk/v1/transport/kmb/eta/${q.stop}/${q.route}/${q.service}`;
+                    try {
+                        const response = await fetch(fetchUrl);
+                        res = await response.json();
+                        if (res && res.data) {
+                            res.data = res.data.map(bus => ({ ...bus, fare: q.fare, type: 'kmb' }));
+                        }
+                    } catch (err) {
+                        console.warn(`無法讀取九巴 ${q.route}`, err);
+                    }
+                    return res;
+                }
+            });
+
+            const responses = await Promise.all(fetchPromises);
+
+            responses.forEach(res => {
+                if (res && res.data) {
+                    const activeBuses = res.data.filter(bus => bus.eta !== null && bus.eta !== undefined && bus.eta !== "");
+                    allValidBuses.push(...activeBuses);
+                }
+            });
+
+            // 去除重覆班次 (同一路線、相同目的地、且相差在 2 分鐘內)
+            const uniqueBuses = [];
+            allValidBuses.forEach(bus => {
+                const isDuplicate = uniqueBuses.some(uBus => {
+                    const isSameRoute = uBus.route === bus.route;
+                    const isSameDest = (uBus.dest_tc || uBus.dest_en) === (bus.dest_tc || bus.dest_en);
+                    const timeDiff = Math.abs(new Date(uBus.eta) - new Date(bus.eta)) / 60000;
+                    return isSameRoute && isSameDest && timeDiff <= 2;
+                });
+                
+                if (!isDuplicate) {
+                    uniqueBuses.push(bus);
+                }
+            });
+
+            allValidBuses = uniqueBuses;
+            allValidBuses.sort((a, b) => new Date(a.eta) - new Date(b.eta));
+
+            renderBuses(allValidBuses);
+            timeDiv.innerText = "最後更新: " + new Date().toLocaleTimeString('zh-HK', { hour12: false });
+
+        } catch (error) {
+            console.error(error);
+            listDiv.innerHTML = `<div class="message" style="color:red;">網絡錯誤，請稍後再試。</div>`;
+        }
+    }
+
+    function renderBuses(buses) {
+        const listDiv = document.getElementById('bus-list');
+
+        if (buses.length === 0) {
+            listDiv.innerHTML = `
+                <div class="message">
+                    <b>目前沒有相關班次資料。</b><br><br>
+                    可能是非服務時間，或巴士/小巴尚未發出定位數據。
+                </div>`;
+            return;
+        }
+
+        listDiv.innerHTML = buses.map(bus => {
+            const now = new Date();
+            const etaDate = new Date(bus.eta);
+            const diffMinutes = Math.floor((etaDate - now) / 60000);
+            
+            const actualTimeText = etaDate.toLocaleTimeString('zh-HK', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: false 
+            });
+            
+            let timeText = "";
+            let timeClass = "eta-time";
+            if (diffMinutes <= 0) {
+                timeText = "即將抵達";
+                timeClass += " arriving";
+            } else {
+                timeText = `${diffMinutes} <span style="font-size:0.8rem;font-weight:normal;">分鐘</span>`;
+            }
+
+            const destName = bus.dest_tc || bus.dest_en;
+            const remark = bus.rmk_tc ? bus.rmk_tc : "預定班次";
+            const fareHtml = bus.fare ? `<span class="fare-badge">$${bus.fare}</span>` : "";
+            
+            const badgeClass = bus.type === 'gmb' ? 'bg-gmb' : 'bg-kmb';
+
+            <!--return `-->
+            return `
+                <li class="bus-item">
+                    <div class="route-badge ${badgeClass}">${bus.route}</div>
+                    <div class="bus-details">
+                        <div class="dest">往 ${destName} ${fareHtml}</div>
+                        <div class="remark">${remark}</div>
+                    </div>
+                    <div class="eta-container">
+                        <div class="actual-time">${actualTimeText}</div>
+                        <div class="${timeClass}">${timeText}</div>
+                    </div>
+                </li>
+            `;
+        }).join('');
+    }
+
+    fetchPreciseData();
+    setInterval(fetchPreciseData, 100000);
+</script>
+
+</body>
+</html>
