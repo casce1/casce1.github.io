@@ -66,6 +66,9 @@
             <option value="hkpt_yl">下高埔村 (往元朗方向)</option>
             <option value="riva">爾巒小巴站</option>
             <option value="yuenlong_yoho2">元朗形點II (往錦田方向)</option>
+			<option value="yl_fcr">元朗(鳳翔路)總站 (往錦田方向)</option>
+			<option value="yl_ftc">元朗鳳庭苑 (往錦田方向)</option>
+    };
         </select>
     </div>
     
@@ -89,7 +92,7 @@ const STATION_DATA = {
                     wday: ['06:25', '06:35', '06:45', '07:00', '07:15', '07:30', '07:45', '07:53', '08:00', '08:07', '08:15', '08:22', '08:30', '08:37', '08:45', '08:52', '09:00', '09:07', '09:22', '09:15', '09:22', '09:30', '09:45', '10:00', '10:20', '10:40', '11:00', '11:20', '11:40', '12:00', '12:20', '12:40', '13:00', '13:20', '13:40', '14:00', '14:10', '14:30', '14:50', '15:10', '15:30', '15:50', '16:10', '16:30', '16:50', '17:10', '17:30', '17:50', '18:10', '18:30', '18:50', '19:10', '19:30', '19:50', '20:10', '20:30', '20:50', '21:10', '21:30', '21:50'],
                     sat:  ['07:00', '07:15', '07:30', '07:45', '08:00', '08:15', '08:30', '08:45', '09:00', '09:15', '09:30', '09:45', '10:00', '10:20', '10:40', '11:00', '11:20', '11:40', '12:00', '12:20', '12:40', '13:00', '13:20', '13:40', '14:00', '14:10', '14:30', '14:50', '15:10', '15:30', '15:50', '16:10', '16:30', '16:50', '17:10', '17:30', '17:50', '18:10', '18:30', '18:50', '19:10', '19:30', '19:50', '20:10', '20:30', '20:50', '21:10', '21:30', '21:50'],
                     sun:  ['07:00', '07:15', '07:30', '07:45', '08:00', '08:15', '08:30', '08:45', '09:00', '09:15', '09:30', '09:45', '10:00', '10:20', '10:40', '11:00', '11:20', '11:40', '12:00', '12:20', '12:40', '13:00', '13:20', '13:40', '14:00', '14:10', '14:30', '14:50', '15:10', '15:30', '15:50', '16:10', '16:30', '16:50', '17:10', '17:30', '17:50', '18:10', '18:30', '18:50', '19:10', '19:30', '19:50', '20:10', '20:30', '20:50', '21:10', '21:30', '21:50']
-                }
+                }, fare_remarks: '' 
             },
             { 
                 type: 'gmb_self', route: '601C', dest: '元朗', fare: '6', 
@@ -97,52 +100,58 @@ const STATION_DATA = {
                     wday: ['06:50', '07:10', '07:30', '07:50', '08:10', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00'],
                     sat:  ['07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00'],
                     sun:  ['07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:0', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00']
-                } 
+                }, fare_remarks: ''
             }
         ],
         "ksr": [
-            { type: 'gmb', endpoint: '2008785/2/1', route: '620', dest: 'Park Yoho', fare: '6' },
-            { type: 'kmb', stop: 'B9CB8D64781C3323', route: '64K',  service: '1', fare: '6.7' },
-            { type: 'kmb', stop: 'B9CB8D64781C3323', route: '77K',  service: '1', fare: '6.7' },
-            { type: 'kmb', stop: 'B9CB8D64781C3323', route: '54',   service: '1', fare: '6.7' },
-            { type: 'kmb', stop: 'C1FA7F4BEE80A723', route: '268',  service: '1', fare: '6.7' },
-            { type: 'kmb', stop: 'A7156FD2BD44D128', route: 'A36',  service: '1', fare: '19.8' },
+            { type: 'gmb', endpoint: '2008785/2/1', route: '620', dest: 'Park Yoho', fare: '6', fare_remarks: '(分段收費)' },
+            { type: 'kmb', stop: 'B9CB8D64781C3323', route: '64K',  service: '1', fare: '6.7', fare_remarks: '' },
+            { type: 'kmb', stop: 'B9CB8D64781C3323', route: '77K',  service: '1', fare: '6.7', fare_remarks: '' },
+            { type: 'kmb', stop: 'B9CB8D64781C3323', route: '54',   service: '1', fare: '6.7', fare_remarks: '' },
+            { type: 'kmb', stop: 'C1FA7F4BEE80A723', route: '268',  service: '1', fare: '6.7', fare_remarks: '' },
+            { type: 'kmb', stop: 'A7156FD2BD44D128', route: 'A36',  service: '1', fare: '19.8', fare_remarks: '' },
             { 
                 type: 'gmb_self', route: '602C', dest: 'RIVA', fare: '6', 
                 timetable: {
                     wday: ['07:07', '07:22', '07:37', '07:52', '08:07', '08:22', '08:37', '08:52', '09:07', '09:22', '09:37', '09:52', '10:10', '10:30', '10:50', '11:10', '11:30', '11:50', '12:10', '12:30', '12:50', '13:10', '13:30', '13:45', '14:05', '14:20', '14:40', '15:00', '15:20', '15:40', '15:00', '15:20', '15:40', '16:00', '16:20', '16:40', '17:00', '17:20', '17:40', '18:00', '18:20', '18:40', '19:00', '19:20', '19:40', '20:00', '20:20', '20:40', '21:00', '21:20', '21:40', '22:00'],
                     sat:  ['07:07', '07:22', '07:37', '07:52', '08:07', '08:22', '08:37', '08:52', '09:07', '09:22', '09:37', '09:52', '10:10', '10:30', '10:50', '11:10', '11:30', '11:50', '12:10', '12:30', '12:50', '13:10', '13:30', '13:45', '14:05', '14:20', '14:40', '15:00', '15:20', '15:40', '15:00', '15:20', '15:40', '16:00', '16:20', '16:40', '17:00', '17:20', '17:40', '18:00', '18:20', '18:40', '19:00', '19:20', '19:40', '20:00', '20:20', '20:40', '21:00', '21:20', '21:40', '22:00'],
                     sun:  ['07:07', '07:22', '07:37', '07:52', '08:07', '08:22', '08:37', '08:52', '09:07', '09:22', '09:37', '09:52', '10:10', '10:30', '10:50', '11:10', '11:30', '11:50', '12:10', '12:30', '12:50', '13:10', '13:30', '13:45', '14:05', '14:20', '14:40', '15:00', '15:20', '15:40', '15:00', '15:20', '15:40', '16:00', '16:20', '16:40', '17:00', '17:20', '17:40', '18:00', '18:20', '18:40', '19:00', '19:20', '19:40', '20:00', '20:20', '20:40', '21:00', '21:20', '21:40', '22:00']
-                } 
+                }, fare_remarks: ''
             }
         ],
         "yuenlong_yoho2": [
-            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'A36',  service: '1', fare: '6.5' },
-            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'E36',  service: '1', fare: '6.4' },
-            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'X36',  service: '1', fare: '30.1' },
-            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'E36P', service: '1', fare: '14.8' },
-            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'NA36', service: '1', fare: '8.9' },
-            { type: 'kmb', stop: '5CE91F113D08B843', route: '68E',  service: '1', fare: '12.8' },
-            { type: 'kmb', stop: '0C943B7308FF4DCC', route: '64K',  service: '1', fare: '6.7' },
-            { type: 'kmb', stop: '0C943B7308FF4DCC', route: '77K',  service: '1', fare: '6.7' },
-            { type: 'kmb', stop: '0C943B7308FF4DCC', route: '54',   service: '1', fare: '6.7' },
-            { type: 'kmb', stop: '0C943B7308FF4DCC', route: '251C', service: '1', fare: '6.7' },
-            { type: 'kmb', stop: '723EF8D7809D3ADB', route: 'N368', service: '1', fare: '39' },
-            { type: 'kmb', stop: '53AC50E46ABDA85B', route: 'N269', service: '1', fare: '14.3' }
+            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'A36',  service: '1', fare: '6.5', fare_remarks: '' },
+            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'E36',  service: '1', fare: '6.4', fare_remarks: '' },
+            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'X36',  service: '1', fare: '30.1', fare_remarks: '' },
+            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'E36P', service: '1', fare: '14.8', fare_remarks: '' },
+            { type: 'kmb', stop: '9FB710B737A32C3A', route: 'NA36', service: '1', fare: '8.9', fare_remarks: '' },
+            { type: 'kmb', stop: '5CE91F113D08B843', route: '68E',  service: '1', fare: '6.7', fare_remarks: '(分段收費)' },
+            { type: 'kmb', stop: '0C943B7308FF4DCC', route: '64K',  service: '1', fare: '6.7', fare_remarks: '(分段收費)'},
+            { type: 'kmb', stop: '0C943B7308FF4DCC', route: '77K',  service: '1', fare: '6.7', fare_remarks: '(分段收費)' },
+            { type: 'kmb', stop: '0C943B7308FF4DCC', route: '54',   service: '1', fare: '6.7', fare_remarks: '(分段收費)' },
+            { type: 'kmb', stop: '0C943B7308FF4DCC', route: '251C', service: '1', fare: '6.7', fare_remarks: '(分段收費)' },
+            { type: 'kmb', stop: '723EF8D7809D3ADB', route: 'N368', service: '1', fare: '39', fare_remarks: '' },
+            { type: 'kmb', stop: '53AC50E46ABDA85B', route: 'N269', service: '1', fare: '14.3', fare_remarks: '' }
         ],
-        "hkpt_yl": [
-            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '54',   service: '1', fare: '6.7' },
-            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '64K',  service: '1', fare: '6.7' },
-            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '68E',  service: '1', fare: '11.5' },
-            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '77K',  service: '1', fare: '6.7' }, 
-            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '251C', service: '1', fare: '6.7' },
-            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: 'N269', service: '1', fare: '14.3' },
-            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: 'N368', service: '1', fare: '14.3' },
-            { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'E36',  service: '1', fare: '14.4' },
-            { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'E36P', service: '1', fare: '14.4' },
-            { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'A36',  service: '1', fare: '19.8' },
-            { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'NA36', service: '1', fare: '34.6' }
+        "hkpt_yl": [  //ha ko po tsuen
+            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '54',   service: '1', fare: '6.7', fare_remarks: '' },
+            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '64K',  service: '1', fare: '6.7', fare_remarks: '' },
+            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '68E',  service: '1', fare: '11.5', fare_remarks: '' },
+            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '77K',  service: '1', fare: '6.7', fare_remarks: '' }, 
+            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: '251C', service: '1', fare: '6.7', fare_remarks: '' },
+            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: 'N269', service: '1', fare: '14.3', fare_remarks: '' },
+            { type: 'kmb', stop: 'F8B3A5C8D0D3CED7', route: 'N368', service: '1', fare: '14.3', fare_remarks: '' },
+            { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'E36',  service: '1', fare: '14.4', fare_remarks: '' },
+            { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'E36P', service: '1', fare: '14.4', fare_remarks: '' },
+            { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'A36',  service: '1', fare: '19.8', fare_remarks: '' },
+            { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'NA36', service: '1', fare: '34.6', fare_remarks: '' }
         ],
+        "yl_fcr": [ //YUEN LONG (FUNG CHEUNG ROAD) BUS TERMINUS (YL970)
+            { type: 'kmb', stop: 'E81DF9AB738F076E', route: '77K',   service: '1', fare: '6.7', fare_remarks: '(分段收費)' },
+        ],
+        "yl_ftc": [ //FUNG TING COURT (YL300)
+            { type: 'kmb', stop: '16C3FC511F2BBC5A', route: '68E',   service: '1', fare: '6.7', fare_remarks: '(分段收費)' },
+        ]
     };
 
     async function fetchPreciseData() {
@@ -222,7 +231,8 @@ const STATION_DATA = {
                                 dest_tc: q.dest,
                                 rmk_tc: "固定時間表班次",
                                 fare: q.fare,
-                                type: 'gmb'
+                                type: 'gmb',
+								fare_remarks: q.fare_remarks
                             });
                         });
                     }
@@ -269,7 +279,8 @@ const STATION_DATA = {
                             dest_tc: q.dest,
                             rmk_tc: etaItem.remarks_tc,
                             fare: q.fare,
-                            type: 'gmb'
+                            type: 'gmb',
+							fare_remarks: q.fare_remarks
                         }))
                     };
 
@@ -279,7 +290,7 @@ const STATION_DATA = {
                         const response = await fetch(fetchUrl);
                         res = await response.json();
                         if (res && res.data) {
-                            res.data = res.data.map(bus => ({ ...bus, fare: q.fare, type: 'kmb' }));
+                            res.data = res.data.map(bus => ({ ...bus, fare: q.fare, type: 'kmb', fare_remarks: q.fare_remarks}));
                         }
                     } catch (err) {
                         console.warn(`無法讀取九巴 ${q.route}`, err);
@@ -359,15 +370,14 @@ const STATION_DATA = {
             const destName = bus.dest_tc || bus.dest_en;
             const remark = bus.rmk_tc ? bus.rmk_tc : "預定班次";
             const fareHtml = bus.fare ? `<span class="fare-badge">$${bus.fare}</span>` : "";
-            
+			const fare_remarks = bus.fare_remarks + "";
             const badgeClass = bus.type === 'gmb' ? 'bg-gmb' : 'bg-kmb';
 
-            <!--return `-->
             return `
                 <li class="bus-item">
                     <div class="route-badge ${badgeClass}">${bus.route}</div>
                     <div class="bus-details">
-                        <div class="dest">往 ${destName} ${fareHtml}</div>
+                        <div class="dest">往 ${destName} ${fareHtml} ${fare_remarks}</div>
                         <div class="remark">${remark}</div>
                     </div>
                     <div class="eta-container">
