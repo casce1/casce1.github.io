@@ -295,7 +295,7 @@ const STATION_DATA = {
                     };
                 } else if (q.type === 'citybus') {
 					//https://rt.data.gov.hk/v1/transport/-nwfb/eta/CTB/003615/B13
-                    const fetchUrl = `https://drt.data.gov.hk/v1/transport/citybus-nwfb/eta/CTB/${q.stop}/${q.route}`;
+                    const fetchUrl = `https://rt.data.gov.hk/v1/transport/citybus-nwfb/eta/CTB/${q.stop}/${q.route}`;
                     try {
                         const response = await fetch(fetchUrl);
                         res = await response.json();
