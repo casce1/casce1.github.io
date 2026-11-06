@@ -293,7 +293,7 @@ const STATION_DATA = {
 							fare_remarks: q.fare_remarks
                         }))
                     };
-                } else (q.type === 'citybus') {
+                } else if (q.type === 'citybus') {
 					//https://rt.data.gov.hk/v1/transport/-nwfb/eta/CTB/003615/B13
                     const fetchUrl = `https://drt.data.gov.hk/v1/transport/citybus-nwfb/eta/CTB/${q.stop}/${q.route}`;
                     try {
