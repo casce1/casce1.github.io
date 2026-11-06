@@ -62,12 +62,13 @@
     <div class="header">
         <h2>上車位置 - 實時到站預報</h2>
         <select id="station-select" class="station-select" onchange="fetchPreciseData()">
-            <option value="ksr">錦上路站 (往元朗方向)</option>
-            <option value="hkpt_yl">下高埔村 (往元朗/機場方向)</option>
-            <option value="riva">爾巒小巴站</option>
-            <option value="yuenlong_yoho2">元朗形點II (往錦田方向)</option>
-			<option value="yl_fcr">元朗(鳳翔路)總站 (往錦田方向)</option>
-			<option value="yl_ftc">元朗鳳庭苑 (往錦田方向)</option>
+            <option value="ksr">上車: 錦上路站 (往元朗方向)</option>
+            <option value="hkpt_yl">上車: 下高埔村 (往元朗/機場方向)</option>
+            <option value="riva">上車: 爾巒小巴站</option>
+            <option value="yuenlong_yoho2">上車: 元朗形點II (往錦田方向)</option>
+			<option value="yl_fcr">上車: 元朗(鳳翔路)總站 (往錦田方向)</option>
+			<option value="yl_ftc">上車: 元朗鳳庭苑 (往錦田方向)</option>
+			<option value="kpt_k">上車: 高埔村 (往九龍方向經大欖)</option>
     };
         </select>
     </div>
@@ -148,13 +149,18 @@ const STATION_DATA = {
             { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'E36',  service: '1', fare: '14.4', fare_remarks: '' },
             { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'E36P', service: '1', fare: '14.4', fare_remarks: '' },
             { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'A36',  service: '1', fare: '19.8', fare_remarks: '' },
-            { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'NA36', service: '1', fare: '34.6', fare_remarks: '' }
+            { type: 'kmb', stop: '2CF4CFA22192E30A', route: 'NA36', service: '1', fare: '34.6', fare_remarks: '' },
+			{ type: 'citybus', stop: '003615', route: 'B13', service: '', fare: '11.5', fare_remarks: '' }
         ],
         "yl_fcr": [ //YUEN LONG (FUNG CHEUNG ROAD) BUS TERMINUS (YL970)
-            { type: 'kmb', stop: 'E81DF9AB738F076E', route: '77K',   service: '1', fare: '6.7', fare_remarks: '(分段收費)' },
+            { type: 'kmb', stop: 'E81DF9AB738F076E', route: '77K',   service: '1', fare: '6.7', fare_remarks: '(分段收費)' }
         ],
         "yl_ftc": [ //FUNG TING COURT (YL300)
-            { type: 'kmb', stop: '16C3FC511F2BBC5A', route: '68E',   service: '1', fare: '6.7', fare_remarks: '(分段收費)' },
+            { type: 'kmb', stop: '16C3FC511F2BBC5A', route: '68E',   service: '1', fare: '6.7', fare_remarks: '(分段收費)' }
+        ],
+        "kpt_k": [ //ko po tsuen to kowloon
+            { type: 'kmb', stop: '41C9D989B8B874FF', route: '68E',   service: '1', fare: '12.5', fare_remarks: '經大欖' },
+			{ type: 'kmb', stop: '41C9D989B8B874FF', route: '268M',   service: '1', fare: '11.5', fare_remarks: '經大欖' }
         ]
     };
 
@@ -287,7 +293,19 @@ const STATION_DATA = {
 							fare_remarks: q.fare_remarks
                         }))
                     };
-
+                } else (q.type === 'citybus') {
+					//https://rt.data.gov.hk/v1/transport/-nwfb/eta/CTB/003615/B13
+                    const fetchUrl = `https://drt.data.gov.hk/v1/transport/citybus-nwfb/eta/CTB/${q.stop}/${q.route}`;
+                    try {
+                        const response = await fetch(fetchUrl);
+                        res = await response.json();
+                        if (res && res.data) {
+                            res.data = res.data.map(bus => ({ ...bus, fare: q.fare, type: 'citybus', fare_remarks: q.fare_remarks}));
+                        }
+                    } catch (err) {
+                        console.warn(`無法讀取城巴 ${q.route}`, err);
+                    }
+                    return res;
                 } else {
                     const fetchUrl = `https://data.etabus.gov.hk/v1/transport/kmb/eta/${q.stop}/${q.route}/${q.service}`;
                     try {
