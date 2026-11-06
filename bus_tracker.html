@@ -9,6 +9,7 @@
             --kmb-red: #d32f2f;
             --kmb-dark: #b71c1c;
             --gmb-green: #2e7d32;
+			--citybus-yellow: #fff100;
             --text-main: rgb(103, 125, 197);
             --bg-color: #f0f2f5;
         }
@@ -35,6 +36,7 @@
         .route-badge { color: white; font-size: 1.2rem; font-weight: 800; min-width: 60px; text-align: center; padding: 8px; border-radius: 8px; margin-right: 16px; }
         .bg-kmb { background: var(--kmb-red); }
         .bg-gmb { background: var(--gmb-green); }
+		.bg-citybus { background: var(--citybus-yellow); }
 
         .bus-details { flex-grow: 1; }
         .dest { font-weight: 600; color: var(--text-main); font-size: 0.95rem; display: flex; align-items: center; }
@@ -63,7 +65,7 @@
         <h2>上車位置 - 實時到站預報</h2>
         <select id="station-select" class="station-select" onchange="fetchPreciseData()">
             <option value="ksr">上車: 錦上路站 (往元朗方向)</option>
-            <option value="hkpt_yl">上車: 下高埔村 (往元朗/機場方向)</option>
+            <option value="hkpt_yl">上車: 下高埔村 (往元朗/機場/內地口岸方向)</option>
             <option value="riva">上車: 爾巒小巴站</option>
             <option value="yuenlong_yoho2">上車: 元朗形點II (往錦田方向)</option>
 			<option value="yl_fcr">上車: 元朗(鳳翔路)總站 (往錦田方向)</option>
@@ -393,7 +395,8 @@ const STATION_DATA = {
             const remark = bus.rmk_tc ? bus.rmk_tc : "預定班次";
             const fareHtml = bus.fare ? `<span class="fare-badge">$${bus.fare}</span>` : "";
 			const fare_remarks = bus.fare_remarks + "";
-            const badgeClass = bus.type === 'gmb' ? 'bg-gmb' : 'bg-kmb';
+            //const badgeClass = bus.type === 'gmb' ? 'bg-gmb' : 'bg-kmb';
+			const badgeClass = bus.type === 'gmb' ? 'bg-gmb' : bus.type === 'citybus' ? 'bg-citybus' : 'bg-kmb';
 
             return `
                 <li class="bus-item">
